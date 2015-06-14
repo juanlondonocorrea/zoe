@@ -1,0 +1,610 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Config</title>
+        <!-- librerias de estilos y js jquery y zoe -->
+  <link rel="stylesheet" href="css/themes/zoe.min.css" />
+  <link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
+  <link rel="stylesheet" href="js/jquery-mobile/jquery.mobile.structure-1.4.5.min.css" />
+  <link rel="stylesheet" href="js/zoe/jquery.mobile.simpledialog.min.css" />
+
+  <!--link rel="stylesheet" href="js/jquery-mobile/jquery.mobile-1.4.5.min.css" /-->  
+<script src="js/jquery-mobile/jquery-2.1.4.js" type="text/javascript"></script>
+<script src="js/jquery-mobile/jquery.mobile-1.4.5.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="cordova.js"></script>
+<script type="text/javascript" src="phonegap.js"></script>
+<script src="js/zoe/zoe.js" type="text/javascript"></script>
+<script src="js/zoe/zoesync.js" type="text/javascript"></script>
+<script src="js/zoe/salesRepDAO.js" type="text/javascript"></script>
+<script src="js/zoe/customerDAO.js" type="text/javascript"></script>
+<script src="js/zoe/invoiceDAO.js" type="text/javascript"></script>
+<script src="js/zoe/termDAO.js" type="text/javascript"></script>
+<script src="js/zoe/taxDAO.js" type="text/javascript"></script>
+<script src="js/zoe/inventoryDAO.js" type="text/javascript"></script>
+<script src="js/zoe/pricelevelDAO.js" type="text/javascript"></script>
+<!-- fin librerias -->
+
+<script>
+		$(document).bind("pagebeforecreate", function(event) {
+			console.log("en pagebeforecreate config.html salesRepName=" + window.localStorage.getItem(
+	"salesRepName"));
+			initAnyPage(event.target);
+			$('#salesRepName').val(window.localStorage.getItem("salesRepName"));	
+			if (!window.localStorage.getItem("syncURL")){
+				window.localStorage.setItem("syncURL","http://24.234.187.107:54320/SyncService");
+			}
+			$('#syncURL').val(window.localStorage.getItem("syncURL"));	
+			$('#submitConfig').click(submitFormConfig);	
+			$('#syncSalesRep').click(syncSalesRep);	
+			$('#syncCustomers').click(syncCustomers);	
+			$('#syncInvoices').click(syncInvoices);	
+			$('#syncInventory').click(syncInventoryItems);	
+			$('#syncOthers').click(syncOthers);	
+			$('#syncPricelevel').click(syncPricelevel);	
+			$('#createDB').click(checkDatabase);	
+			$('#syncAll').click(syncAll);	
+			$('#testGetInvoice').click(testGetInvoice);	
+			logZoe("config.html listo pagebeforecreate");
+		});
+
+	function submitFormConfig(form) {
+		window.localStorage.setItem("salesRepName", $('#salesRepName').val());
+		window.localStorage.setItem("syncURL",$('#syncURL').val());
+		logZoe("config localStorage salesRepName=" + window.localStorage.getItem("salesRepName"));
+		return false;
+	}
+
+//SYCHRONIZATION ALL
+var synchronizingAll = false;
+function syncAll(form){
+	try{
+		synchronizingAll=true;
+		syncSalesRep();
+	}catch(exception){
+		console.log(JSON.stringify(exception));
+	}
+	return false;
+}
+
+//SYNCHRONIZATION Employee and Salesrep	
+	function syncSalesRep(form){
+		console.log("entre a syncSalesRep");
+		var mensaje = 	
+		'		<EmployeeQueryRq requestID="c1"><OwnerID>0</OwnerID></EmployeeQueryRq>';
+		var cache = "employee";
+		var xpathExp = '//EmployeeRet[Name="' + window.localStorage.getItem("salesRepName") + '"]';				
+		consumeWS(mensaje, "JSON", receiveMessageEmployee,cache, xpathExp);
+		
+		return false;
+	}
+	
+
+	var salesRepVO;
+	function receiveMessageEmployee(message){
+		var employee = message.EmployeeQueryRs;
+		var password = "";
+		if (employee.DataExtRet && employee.DataExtRet.length>0){
+			for (var j = 0; j< employee.DataExtRet.length; j++){
+				logZoe("employee.DataExtRet[j].DataExtName=" + employee.DataExtRet[j].DataExtName);
+				if ("password" == employee.DataExtRet[j].DataExtName){
+					password = employee.DataExtRet[j].DataExtValue;
+				}
+			}
+		}else if (employee.DataExtRet && employee.DataExtRet.DataExtName=="password"){
+					passwrod = employee.DataExtRet.DataExtValue;
+		}
+		salesRepVO = {id_employee:employee.EmployeeRet.ListID,
+			name:employee.EmployeeRet.Name, 
+			password:password, 
+			isActive:employee.EmployeeRet.IsActive, 
+			syncTime:Date.now(), Initial:""};
+			
+		var mensajeSalesRep = '<SalesRepQueryRq requestID="c1"></SalesRepQueryRq>';
+		var cache = "salesrep";
+		var xpathExp = '//SalesRepRet[SalesRepEntityRef/FullName="' + window.localStorage.getItem('salesRepName') + '"]';
+
+		
+		consumeWS(mensajeSalesRep, "JSON", receiveMessageSalesRep,cache, xpathExp);
+			
+	}
+	function successSyncSalesRep(){
+		if (synchronizingAll){
+			syncOthers();
+		}else{
+			alert("Success synch salesrep");
+		}
+		return false;
+	}
+	
+	function errSalesRepSync(err){
+		alert("DB Error synch salesrep: "+JSON.stringify(err));
+	}
+	
+
+	function receiveMessageSalesRep(message){
+		var salesRep = message.SalesRepQueryRs.SalesRepRet;
+		logZoe("receiveMessageSalesRep salesRep=" + JSON.stringify(salesRep));
+		logZoe("receiveMessageSalesRep salesRep.Initial=" + JSON.stringify(salesRep.Initial));
+		salesRepVO.id_salesRep = salesRep.ListID;
+		salesRepVO.Initial = salesRep.Initial+ "";
+		logZoe("receiveMessageSalesRep salesRepVO=" + JSON.stringify(salesRepVO));
+			
+		salesRepDAO.store(salesRepVO, errSalesRepSync, successSyncSalesRep);
+	}
+	
+//SYNCHRONIZATION Customers	
+	function syncCustomers(form){
+		console.log("entre a syncCustomers");
+		salesRepDAO.getByName(window.localStorage.getItem("salesRepName"), function(salesrepVO){
+		logZoe("en syncCustomers salesrepVO = " + JSON.stringify(salesrepVO));
+		var mensaje = 	
+		'<CustomerQueryRq  requestID="customer1"></CustomerQueryRq>';
+		var cache="customer";
+		var xpathExp = '//CustomerRet[SalesRepRef/FullName="'+ salesrepVO.initial + '"]';
+		
+		consumeWS(mensaje, "JSON", receiveCustomersMessage, cache, xpathExp);
+		});
+		return false;
+	}
+
+	function receiveCustomersMessage(message){
+		var customers = message.CustomerQueryRs.CustomerRet;
+		var i;
+		var customersVO = [];
+		for (i=0;i<customers.length;i++){
+			logZoe("customers[i]=" + JSON.stringify(customers[i]));
+			logZoe("customers[i].TermsRef=" + JSON.stringify(customers[i].TermsRef));
+			if (customers[i].TermsRef){
+				logZoe("customers[i].TermsRef.ListID=" + JSON.stringify(customers[i].TermsRef));					
+			}
+			var routeDay = "";
+
+			logZoe("customers[i].DataExtRet:" + JSON.stringify(customers[i].DataExtRet));
+			if (customers[i].DataExtRet){
+				logZoe("customers[i].DataExtRet.length" + customers[i].DataExtRet.length);
+			}
+			if (customers[i].DataExtRet && customers[i].DataExtRet.length>0){
+				for (var j = 0; j< customers[i].DataExtRet.length; j++){
+					logZoe("customers[i].DataExtRet[j].DataExtName=" + customers[i].DataExtRet[j].DataExtName);
+					if ("ROUTEDAY" == customers[i].DataExtRet[j].DataExtName.toUpperCase){
+						routeDay = customers[i].DataExtRet[j].DataExtValue;
+					}
+				}
+			}else if (customers[i].DataExtRet && customers[i].DataExtRet.DataExtName.toUpperCase()=="ROUTEDAY"){
+						routeDay = customers[i].DataExtRet.DataExtValue;
+			}
+			routeDay = routeDay.toUpperCase();
+			logZoe("routeday=" + routeDay);
+			var customerVO = {ListID:customers[i].ListID,
+			FullName:customers[i].FullName,
+			IsActive:customers[i].IsActive==true?1:0,
+			billAddress1:customers[i].BillAddress?customers[i].BillAddress.Addr1:null,
+			billAddress2:customers[i].BillAddress?customers[i].BillAddress.Addr2:null,
+			billAddress3:customers[i].BillAddress?customers[i].BillAddress.Addr3:null,
+			billAddresZipcode:customers[i].BillAddress?customers[i].BillAddress.PostalCode+"":null,
+			billAddresCity:customers[i].BillAddress?customers[i].BillAddress.City:null,
+			billAddressState:customers[i].BillAddress?customers[i].BillAddress.State:null,
+			billAddressCountry:customers[i].BillAddress?customers[i].BillAddress.Country:null,
+			shipAddress1:customers[i].ShipAddress?customers[i].ShipAddress.Addr1:null,
+			shipAddress2:customers[i].ShipAddress?customers[i].ShipAddress.Addr2:null,
+			shipAddress3:customers[i].ShipAddress?customers[i].ShipAddress.Addr3:null,
+			shipAddressZipcode:customers[i].ShipAddress?customers[i].ShipAddress.PostalCode+"":null,
+			shipAddressCity:customers[i].ShipAddress?customers[i].ShipAddress.City:null,
+			shipAddressState:customers[i].ShipAddress?customers[i].ShipAddress.State:null,
+			shipAddressCountry:customers[i].ShipAddress?customers[i].ShipAddress.Country:null,
+			openBalance:customers[i].Balance,
+			overdueBalance:customers[i].TotalBalance,
+			workPhone:customers[i].Phone,
+			cellPhone:customers[i].AltPhone,
+			email:customers[i].Email,
+			Fax:customers[i].Fax,
+			id_salesrep:customers[i].SalesRepRef?customers[i].SalesRepRef.ListID:null,
+			routeDay1:routeDay.indexOf("SUN")>-1?1:0,
+			routeDay2:routeDay.indexOf("MON")>-1?1:0,
+			routeDay3:routeDay.indexOf("TUE")>-1?1:0,
+			routeDay4:routeDay.indexOf("WED")>-1?1:0,
+			routeDay5:routeDay.indexOf("THU")>-1?1:0,
+			routeDay6:routeDay.indexOf("FRI")>-1?1:0,
+			routeDay7:routeDay.indexOf("SAT")>-1?1:0,
+			name:customers[i].Name,
+			companyName:customers[i].CompanyName,
+			id_term:customers[i].TermsRef?customers[i].TermsRef.ListID:null,
+			pricelevel_ListID:customers[i].PriceLevelRef?customers[i].PriceLevelRef.ListID:null};
+			logZoe("customerVO=" + JSON.stringify(customerVO));
+			customersVO[i] = customerVO;
+		}
+			
+		customerDAO.deleteAll(errCustomerInsert);
+		customerDAO.store(customersVO, errCustomerInsert, successCustomerInsert,'remote');
+		
+	}
+
+
+	function successCustomerInsert(){
+		if (synchronizingAll){
+			syncInventoryItems();
+		}else{
+			alert("Success synch customers");
+		}
+	}
+	
+	function errCustomerInsert(err){
+		alert("DB Error synch customers: "+JSON.stringify(err));
+	}
+
+//SYNCHRONIZATION Invoices	
+	function syncInvoices(form){
+		console.log("entre a syncInvoices");
+		salesRepDAO.getByName(window.localStorage.getItem("salesRepName"), function(salesrepVO){
+		logZoe("en syncInvoices salesrepVO = " + JSON.stringify(salesrepVO));
+		var mensaje = 	
+		'<InvoiceQueryRq requestID="invoice"></InvoiceQueryRq>';
+		var cache="invoice";
+		var xpathExp = '//InvoiceRet[SalesRepRef/ListID="'+ salesrepVO.id_salesrep + '"]';
+		
+		consumeWS(mensaje, "JSON", receiveInvoicesMessage, cache, xpathExp);
+		});
+		return false;
+	}
+
+	function receiveInvoicesMessage(message){
+		var invoices = message.InvoiceQueryRs.InvoiceRet;
+		var i;
+		var invoicesVO = [];
+		for (i=0;i<invoices.length;i++){
+			logZoe("invoices[i]=" + JSON.stringify(invoices[i]));
+			logZoe("invoices[i].TermsRef=" + JSON.stringify(invoices[i].TermsRef));
+			if (invoices[i].TermsRef)
+				logZoe("invoices[i].TermsRef.ListID=" + JSON.stringify(invoices[i].TermsRef.ListID));
+			
+			var invoiceVO = {
+				id_invoice:invoices[i].TxnID,
+				ListID : invoices[i].CustomerRef.ListID,
+				po_number : null,
+				dueDate : invoices[i].DueDate,
+				appliedAmount : invoices[i].AppliedAmount,
+				balanceRemaining : invoices[i].BalanceRemaining,
+				billAddress_addr1 : invoices[i].BillAddress?invoices[i].BillAddress.Addr1:null,
+				billAddress_addr2 :invoices[i].BillAddress?invoices[i].BillAddress.Addr2:null,
+				billAddress_addr3 : invoices[i].BillAddress?invoices[i].BillAddress.Addr3:null,
+				billAddress_city : invoices[i].BillAddress?invoices[i].BillAddress.City:null,
+				billAddress_state : invoices[i].BillAddress?invoices[i].BillAddress.State:null,
+				billAddress_postalcode : invoices[i].BillAddress?invoices[i].BillAddress.PostalCode:null,
+				shipAddress_addr1 : invoices[i].BillAddress?invoices[i].BillAddress.addr1:null,
+				shipAddress_addr2 : invoices[i].BillAddress?invoices[i].BillAddress.addr2:null,
+				shipAddress_addr3 : invoices[i].BillAddress?invoices[i].BillAddress.addr3:null,
+				shipAddress_city : invoices[i].BillAddress?invoices[i].BillAddress.City:null,
+				shipAddress_state : invoices[i].BillAddress?invoices[i].BillAddress.State:null,
+				shipAddress_postalcode : invoices[i].BillAddress?invoices[i].BillAddress.PostalCode:null,
+				isPaid : invoices[i].IsPaid=="true"?1:0,
+				isPending : invoices[i].IsPending=="true"?1:0,
+				refNumber : invoices[i].RefNumber,
+				TaxPercentage : invoices[i].SalesTaxPercentage,
+				salesTaxTotal : invoices[i].SalesTaxTotal,
+				shipDate : invoices[i].ShipDate,
+				subtotal : invoices[i].Subtotal,
+				id_term: typeof invoices[i].TermsRef != "undefined"?invoices[i].TermsRef.ListID:null,
+				items: new Array()
+			}
+			
+			invoicesVO[i] = invoiceVO;
+			if (invoices[i].InvoiceLineRet){
+				for (j=0;j<invoices[i].InvoiceLineRet.length;j++){
+					var line = invoices[i].InvoiceLineRet[j];
+					var itemVO = {
+							LineID:line.TxnLineID,
+							id_invoice:invoiceVO.id_invoice,
+							Inventory_ListID:line.ItemRef.ListID,
+							Desc:line.Desc,
+							Quantity:line.Quantity,
+							Rate:line.Rate,
+							Amount:line.Amount,
+							SalesTax_ListID:line.SalesTaxCodeRef.ListID
+					}
+					invoiceVO.items[j] = itemVO;
+				}
+			}
+				
+		}
+			
+		invoiceDAO.deleteAll(errCustomerInsert);
+		invoiceDAO.store(invoicesVO, errInvoiceInsert, successInvoiceInsert,'remote');
+	}
+
+
+	function successInvoiceInsert(){
+		if (synchronizingAll){
+			synchronizingAll = false;
+			alert("Success synch all");
+		}else{
+			alert("Success synch Invoices");
+		}
+	}
+	
+	function errInvoiceInsert(err){
+		alert("DB Error synch invoices: "+JSON.stringify(err));
+	}
+
+
+//SYNCHRONIZATION inventory
+
+	function syncInventoryItems(form){
+		console.log("entre a syncInventoryItems");
+		var mensaje = 	
+		'<ItemQueryRq></ItemQueryRq>';
+		var cache="item";
+		
+		consumeWS(mensaje, "JSON", receiveInventoryItemsMessage, cache);
+		return false;
+	}
+
+	function receiveInventoryItemsMessage(message){
+		var items = message.ItemQueryRs.ItemInventoryRet;
+		var i;
+		var itemListVO = [];
+		for (i=0;i<items.length;i++){
+			logZoe("items[i]=" + JSON.stringify(items[i]));
+			var itemVO = {ListID:items[i].ListID,
+			FullName:items[i].FullName+"",
+			salesDesc:items[i].SalesDesc,
+			inventorySite_ListID:null,
+			quantityOnHand:null,
+			salesTax_ListID:items[i].SalesTaxCodeRef?items[i].SalesTaxCodeRef.ListID:null,
+			salesPrice:items[i].SalesPrice};
+			itemListVO[i] = itemVO;
+		}
+			
+		inventoryDAO.deleteAll(errInventoryInsert);
+		inventoryDAO.store(itemListVO, errInventoryInsert, syncItemSites);
+		
+	}
+	
+
+	function syncItemSites(form){
+		console.log("entre a syncItemSites");
+		salesRepDAO.getByName(window.localStorage.getItem("salesRepName"), function(salesrepVO){
+		logZoe("en syncInventory salesrepVO = " + JSON.stringify(salesrepVO));
+		var mensaje = 	
+		'<ItemSitesQueryRq><ActiveStatus>All</ActiveStatus></ItemSitesQueryRq>';
+		var cache="inventorybysite";
+		var xpathExp = '//ItemSitesRet[InventorySiteRef/FullName="'+ salesrepVO.initial + '"]';
+		
+		consumeWS(mensaje, "JSON", receiveItemSitesMessage, cache, xpathExp);
+		});
+		return false;
+	}
+
+	function receiveItemSitesMessage(message){
+		var inventory = message.ItemSitesQueryRs.ItemSitesRet;
+		var i;
+		var inventoryListVO = [];
+		for (i=0;i<inventory.length;i++){
+			logZoe("inventory[i]=" + JSON.stringify(inventory[i]));
+			var inventoryVO = {ListID:inventory[i].ItemInventoryRef.ListID,
+			InventorySite_ListID:inventory[i].InventorySiteRef?inventory[i].InventorySiteRef.ListID:null,
+			QuantityOnHand:inventory[i].QuantityOnHand};
+			logZoe("inventoryVO=" + JSON.stringify(inventoryVO));
+			inventoryListVO[i] = inventoryVO;
+		}
+			
+		inventoryDAO.storeItemSites(inventoryListVO, errInventoryInsert, successInventoryInsert);
+		
+	}
+
+
+	function successInventoryInsert(){
+		if (synchronizingAll){
+			syncPricelevel();
+		}else{
+			alert("Success synch inventory");
+		}
+	}
+	
+	function errInventoryInsert(err){
+		alert("DB Error synch inventory: "+JSON.stringify(err));
+	}
+
+//SYNCHRONIZATION Others	
+	function syncOthers(form){
+		console.log("entre a syncOthers");
+		var mensaje = 	
+		'<TermsQueryRq  requestID="Term1"><ActiveStatus>ActiveOnly</ActiveStatus></TermsQueryRq>';
+		var cache="term";
+		
+		consumeWS(mensaje, "JSON", receiveTermsMessage, cache);
+		return false;
+	}
+
+	function receiveTermsMessage(message){
+		var terms = message.TermsQueryRs.StandardTermsRet;
+		var i;
+		var termsVO = [];
+		for (i=0;i<terms.length;i++){
+			logZoe("terms[i]=" + JSON.stringify(terms[i]));
+			var termVO = {
+				id_term:terms[i].ListID,
+				name : terms[i].Name,
+				stdDueDays : terms[i].StdDueDays,
+				stdDiscountDays : terms[i].StdDiscountDays,
+				discountPct : terms[i].DiscountPct
+			}
+			termsVO[i] = termVO;
+			
+		}
+			
+		termDAO.deleteAll(errTermInsert);
+		termDAO.store(termsVO, errTermInsert, successTermInsert);
+	}
+
+
+	function successTermInsert(){
+		syncTaxes();
+	}
+	
+	function errTermInsert(err){
+		alert("DB Error synch terms: "+JSON.stringify(err));
+	}
+
+	function syncTaxes(form){
+		console.log("entre a syncTaxes");
+		var mensaje = 	
+		'<SalesTaxCodeQueryRq  requestID="tax1"><ActiveStatus>ActiveOnly</ActiveStatus></SalesTaxCodeQueryRq>';
+		var cache="tax";
+		
+		consumeWS(mensaje, "JSON", receiveTaxesMessage, cache);
+		return false;
+	}
+
+	function receiveTaxesMessage(message){
+		var taxes = message.SalesTaxCodeQueryRs.SalesTaxCodeRet;
+		var i;
+		var taxesVO = [];
+		for (i=0;i<taxes.length;i++){
+			logZoe("taxes[i]=" + JSON.stringify(taxes[i]));
+			var taxVO = {
+				ListID:taxes[i].ListID,
+				name : taxes[i].Name,
+				desc : taxes[i].Desc
+			}
+			taxesVO[i] = taxVO;
+			
+		}
+			
+		taxDAO.deleteAll(errTaxInsert);
+		taxDAO.store(taxesVO, errTaxInsert, successTaxInsert);
+	}
+
+
+	function successTaxInsert(){
+		if (synchronizingAll){
+			syncCustomers();
+		}else{
+			alert("Success synch term and salestax");
+		}
+	}
+	
+	function errTaxInsert(err){
+		alert("DB Error synch tax: "+JSON.stringify(err));
+	}
+	
+//SYNCHRONIZATION pricelevel	
+	function syncPricelevel(form){
+		console.log("entre a syncPricelevel");
+		var mensaje = '<PriceLevelQueryRq  requestID="pl"></PriceLevelQueryRq>';
+		var cache="pricelevel";
+		
+		consumeWS(mensaje, "JSON", receivePricelevelMessage, cache);
+		return false;
+	}
+
+	function receivePricelevelMessage(message){
+		var pricelevels = message.PriceLevelQueryRs.PriceLevelRet;
+		var i;
+		var pricelevelsVO = [];
+		for (i=0;i<pricelevels.length;i++){
+			logZoe("pricelevel[i]=" + JSON.stringify(pricelevels[i]));
+			var pricelevelVO = {
+				ListID: pricelevels[i].ListID,
+				name : pricelevels[i].Name,
+				type : pricelevels[i].PriceLevelType,
+				fixedPercentage : pricelevels[i].PriceLevelFixedPercentage,
+				items : new Array()
+			}
+			pricelevelsVO[i] = pricelevelVO;
+			console.log("pricelevelVO.type=" + pricelevelVO.type);
+			if (pricelevelVO.type=="PerItem"){
+				var items = pricelevels[i].PriceLevelPerItemRet;
+				console.log("items=" + items);
+				var j;
+				for (j=0;j<items.length;j++){
+						var itemVO = {
+							pricelevel_ListID: pricelevelVO.ListID,
+							inventory_ListID: items[j].ItemRef.ListID,
+							customPrice: items[j].CustomPrice
+						}
+						console.log("itemVO =" + JSON.stringify(itemVO));
+						pricelevelsVO[i].items[j] = itemVO;
+				}
+			}
+			
+		}
+		
+		pricelevelDAO.deleteAll(errPricelevelInsert);
+		pricelevelDAO.store(pricelevelsVO, errPricelevelInsert, successPricelevelInsert);
+	}
+
+
+	function successPricelevelInsert(){
+		if (synchronizingAll){
+			syncInvoices();
+		}
+		else{
+			alert("Succes sync priceLevel");
+		}
+	}
+	
+	function errPricelevelInsert(err){
+		alert("DB Error synch princelevels: "+JSON.stringify(err));
+	}
+	
+	
+	//TESTS
+	function testGetInvoice(){
+		//recupera facturas completas (incluye items)
+		invoiceDAO.getById("3CBE-1421044358", true,receiveGetInvoice);
+		return false;
+	}
+	
+	function  receiveGetInvoice(invoiceVO){
+		logZoe("receiveGetInvoice invoiceVO=" + JSON.stringify(invoiceVO));
+	}
+
+</script>
+</head>
+
+<body>
+
+        <div data-role="page" id="config" data-title="Config">
+        
+            <div data-role="content"> 
+                <form method="post" id="configForm" data-ajax="true">
+                    <lable for="salesRepName">Piloch Sales Rep Full Name</lable><input type="text" id="salesRepName" name="salesRepName" placeholder="salesRepName"><br>
+
+                    <lable for="syncURL">Synchronization URL</lable><input type="text" id="syncURL" name="syncURL" placeholder="syncURL"><br>
+                                 
+                        <input id="submitConfig" type="submit" value="Save">
+		                <button class="ui-btn" id="syncSalesRep">Synch Sales Rep</button>
+		                <button class="ui-btn" id="syncOthers">Synch Sales Taxes and Terms</button>
+		                <button class="ui-btn" id="syncCustomers">Synch Customers</button>
+		                <button class="ui-btn" id="syncInvoices">Synch Invoices</button>
+		                <button class="ui-btn" id="syncInventory">Synch Inventory</button>
+		                <button class="ui-btn" id="syncPricelevel">Synch pricelevel</button>
+		                <button class="ui-btn" id="syncAll">Sync ALL</button>
+		                <button class="ui-btn" id="createDB">create database</button>
+		                <button class="ui-btn" id="testGetInvoice">testGetInvoice</button>
+                </form>
+            </div>
+        
+
+<div data-role="popup" id="synchDialog" data-dismissible="false" style="width:300px">
+    <div data-role="header">
+    Synchronizing
+    </div>
+    <div role="main" class="ui-content">
+		  <p>Please wait....</p>
+      		<a href="#" class="ui-btn" data-rel="back">Cancel</a>
+	</div>
+</div>
+
+
+<!-- divs de header, menu y footer-->
+	<div data-role="header" data-position="fixed" data-id="theheader" class="app-header"></div>
+    <div data-role="panel" data-display="overlay" data-position="left" id="menu" class="app-menu"></div>
+	<div data-role="footer" data-position="fixed" data-id="thefooter" class="app-footer"></div>
+<!-- fin divs -->
+
+</div>
+
+</body>
+</html>

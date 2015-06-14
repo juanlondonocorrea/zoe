@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Customers</title>
+
+		<link rel="stylesheet" href="css/themes/zoe.min.css" />
+		<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
+		<link rel="stylesheet" href="js/jquery-mobile/jquery.mobile.structure-1.4.5.min.css" />
+		<link rel="stylesheet" href="js/jqm-inlinetabs/jqm-inlinetabs.min.css" />
+
+		<!--  <link rel="stylesheet" href="js/jquery-mobile/jquery.mobile-1.4.5.min.css" />  -->
+		<script src="js/jquery-mobile/jquery-2.1.4.js"></script>
+		<script src="js/jquery-mobile/jquery.mobile-1.4.5.min.js"></script>
+		<script src="js/jqm-inlinetabs/jqm-inlinetabs.min.js"></script>        
+		<script src="js/zoe/zoe.js"></script>
+		<script src="js/zoe/customerDAO.js"></script>
+        <script src="js/zoe/termDAO.js"></script>
+        <script src="js/zoe/pricelevelDAO.js"></script>
+
+		<script> 
+
+			$(document).bind("pagebeforecreate", function(event) {
+				initAnyPage(event.target);
+				initThisPage(event);
+			});
+ 
+			function initThisPage(event){
+				customerDAO.listByRouteDay(6, receiveCustomers,errReceiveCustomers);
+				//customerDAO.list(receiveCustomers, errReceiveCustomers);
+			}
+
+			// BEGIN Functions on error case
+			function errReceiveCustomers(err){
+				alert("DB Error customer route: "+JSON.stringify(err));
+			}
+			// END functions on error case
+			
+			$(document).bind('pagechange', function() {
+				$('.ui-page-active .ui-listview').listview('refresh');
+				$('.ui-page-active :jqmData(role=content)').trigger('create');
+			});	
+
+			$(document).ready(function(){ 
+			$("#custList .li").each(function () {
+			   if($(this).val().indexof('-') > -1)
+				{
+				  $(this).css("color", "Crimson");
+				}
+			})  
+			});			
+
+			// Populate Customers list
+			var listCustomers = new Array();
+			var selectedIndex;
+			function receiveCustomers(arrayCustomers){
+				listCustomers = arrayCustomers; // Copy local array to global array
+
+				// Build customers list with <ol> <li>
+				var htmlString1 = '<ol id="custList" data-role="listview" data-filter="true" data-filter-placeholder="Search customers..." data-inset="true">';
+				for(var i=0; i< arrayCustomers.length; i++) {
+					htmlString1 += '<li data-filtertext="' + arrayCustomers[i].FullName + '"><a class="linkDetail" href="Customers.html#CustomersDetails?index=' + i + '" id="link_' + i + '" ><h3>'+arrayCustomers[i].FullName+'</h3><p>Total Sales</p><span id="openB" class="ui-li-count">'+arrayCustomers[i].salesofday+'</span></a><a class="linkDetail" href="#CustomersDetails?index=' + i + '" id="link_' + i + '">Predet.</a></li>';
+					
+					}
+					htmlString1 += '</ol>';
+					logZoe("htmlString1="+htmlString1);
+					$('#CustomersList').html(htmlString1);
+					$(".linkDetail").click(goDetail);
+			}
+			
+			function goDetail(event){
+				var index =  event.currentTarget.id;
+				logZoe("goDetail index: "+index)
+				index = index.substring(index.indexOf("_")+1);
+				selectedIndex = index;
+				//renderDetail(index);
+			}
+		</script>
+		<style type="text/css">
+			thead {color:black;}
+			tbody {color:gray;}
+			tfoot {
+				color:#ff770f;
+				font-weight:bolder;
+			}
+			table, th, td {
+				border: 1px solid black;
+			}
+			.control-group {
+				margin-bottom: 9px;
+				background-color:#FFFFFF;
+				border-color:#000000;
+				border-width:medium;
+				border:thick;
+			
+				box-shadow: inset 2px 2px 1px 1px rgba(50, 50, 50, 0.75);
+			}
+		</style> 
+	</head>
+
+	<body>
+
+        <!-- CUSTOMERS LIST (ALPHABETIC BY NAME AND OVERDUE BALANCE IN RED) -->
+		<div data-role="page" id="CustomerRoute" data-theme="a" data-title="Customer Route">
+			<div data-role="content" id="CustomersList">
+				<!-- Injection-->
+			</div>
+			<!-- divs de header, menu y footer-->
+			<div data-role="header" data-position="fixed" data-id="theheader" class="app-header"></div>
+			<div data-role="panel" data-display="overlay" data-position="left" id="menu" class="app-menu"></div>
+			<div data-role="footer" data-position="fixed" data-id="thefooter" class="app-footer"></div>
+		<!-- fin divs -->
+		</div> 
+
+		<!-- BEGIN CUSTOMERS DETAILS-->
+		<div data-role="page" id="CustomersDetails"  data-title="Customers Detail" data-theme="a">
+
+			<!-- divs de header, menu y footer-->
+			<div data-role="header" data-position="fixed" data-id="theheader" class="app-header"></div>
+			<div data-role="panel" data-display="overlay" data-position="left" id="menu" class="app-menu"></div>
+			<div data-role="footer" data-position="fixed" data-id="thefooter" class="app-footer"></div>
+			<!-- fin divs -->    
+		</div>
+		<!-- END CUSTOMERS DETAILS--> 
+	</body>
+</html>
