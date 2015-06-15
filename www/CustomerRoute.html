@@ -59,7 +59,7 @@
 				// Build customers list with <ol> <li>
 				var htmlString1 = '<ol id="custList" data-role="listview" data-filter="true" data-filter-placeholder="Search customers..." data-inset="true">';
 				for(var i=0; i< arrayCustomers.length; i++) {
-					htmlString1 += '<li data-filtertext="' + arrayCustomers[i].FullName + '"><a class="linkDetail" href="Customers.html#CustomersDetails?index=' + i + '" id="link_' + i + '" ><h3>'+arrayCustomers[i].FullName+'</h3><p>Total Sales</p><span id="openB" class="ui-li-count">'+arrayCustomers[i].salesofday+'</span></a><a class="linkDetail" href="#CustomersDetails?index=' + i + '" id="link_' + i + '">Predet.</a></li>';
+					htmlString1 += '<li data-filtertext="' + arrayCustomers[i].FullName + '"><a class="linkDetail" href="CustomerRoute.html#CustomersDetails?index=' + i + '" id="link_' + i + '" ><h3>'+arrayCustomers[i].FullName+'</h3><p>Total Sales</p><span id="openB" class="ui-li-count">'+arrayCustomers[i].salesofday+'</span></a><a class="linkDetail" href="#CustomerRoute.html#CustomersDetails?index=' + i + '" id="link_' + i + '">Predet.</a></li>';
 					
 					}
 					htmlString1 += '</ol>';
