@@ -36,9 +36,9 @@
   <gap:plugin name="org.apache.cordova.network-information"/>
   <gap:plugin name="org.apache.cordova.splashscreen"/>
   <gap:plugin name="org.apache.cordova.vibration"/>
-  <gap:splash src="www/images/zoe_full.png" gap:platform="android"/>
+  <gap:splash src="images/zoe_full.png" gap:platform="android"/>
   <access origin="*"/>
-  <icon src="www/icon_zoe2.png" />
+  <icon src="icon_zoe2.png" />
 
   <plugin name="cordova-plugin-whitelist" version="1"/>
   <allow-intent href="http://*/*"/>
