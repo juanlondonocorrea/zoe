@@ -25,11 +25,12 @@
 				initAnyPage(event.target);
 				initThisPage(event);
 			});
-
+			
 			var type="";
-			function initThisPage(event){
+			function initThisPage(event){ 
 				//receiveCustomers();
 				type="";
+
 				if (event && event.currentTarget && event.currentTarget.URL){
 					console.log("event.currentTarget.URL: "+event.currentTarget.URL);
 					type = event.currentTarget.URL.split("?type=")[1];
@@ -192,9 +193,10 @@
 */			
 				console.log("receiveCustomers arrayCustomers=" + JSON.stringify(arrayCustomers));
 				listCustomers = arrayCustomers; // Copy local array to global array
-
+				console.log("========= INICIO LISTA =========");
 				// Build customers list with <ol> <li>
 				var htmlString1 = '<ol id="custList" data-role="listview" data-filter="true" data-filter-placeholder="Search customers..." data-inset="true">';
+				
 				for(var i=0; i< arrayCustomers.length; i++) {
 				/*	if (arrayCustomers[i].openBalance < 0) {
 						$("#openB").css("color", "Crimson");
@@ -202,13 +204,15 @@
 					else {
 						$("#openB").css("color", "black");
 					} */
+					
 					htmlString1 += '<li data-filtertext="' + arrayCustomers[i].FullName + '"><a class="linkDetail" href="#CustomersDetails?index=' + i + '" id="link_' + i + '" ><h3>'+arrayCustomers[i].FullName+'</h3><p>' + ((type=='route')?'Total sales':'Balance') + '</p><span id="openB" class="ui-li-count">'+((type=='route')?arrayCustomers[i].salesofday:arrayCustomers[i].openBalance)+'</span></a><a class="linkDetail" href="#CustomersDetails?index=' + i + '" id="link_' + i + '">Predet.</a></li>';
 					
 					}
 					htmlString1 += '</ol>';
 					logZoe("htmlString1="+htmlString1);
+					console.log("========= FIN LISTA =========");
 					$('#CustomersList').html(htmlString1);
-					$(".linkDetail").click(goDetail);
+					$(".linkDetail").click(goDetail); 
 			}
 			
 			function receiveTerms(arrayTerms){
@@ -490,7 +494,7 @@
 		</style> 
 	</head>
 
-	<body onLoad="disableEdit();">
+	<body onload="disableEdit();">
 
         <!-- CUSTOMERS LIST (ALPHABETIC BY NAME AND OVERDUE BALANCE IN RED) -->
 		<div data-role="page" id="Customers" data-theme="a" data-title="Customers">
