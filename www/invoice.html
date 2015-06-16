@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
   <link rel="stylesheet" href="js/jquery-mobile/jquery.mobile.structure-1.4.5.min.css" />
 
+  <script type="text/javascript" src="cordova.js"></script>
   <script src="js/jquery-mobile/jquery-2.1.4.js"></script>
   <script src="js/jquery-mobile/jquery.mobile-1.4.5.min.js"></script>
   <script src="js/zoe/zoe.js"></script>
@@ -32,7 +33,7 @@
 				customerDAO.list(receiveCustomers,errReceive);
 				termDAO.list(receiveTerms,errReceive);
 				taxDAO.list(receiveTaxes,errReceive);
-				salesRepDAO.getByName(window.localStorage.getItem("salesRepName"),receiveSalesrep,errReceive);
+				salesRepDAO.getByName(window.localStorage.getItem("salesRepName"),receiveSalesrep);
 				
 			}
 			
@@ -41,8 +42,8 @@
 				salesrepVO = obj;
 				console.log("salesRep=" + JSON.stringify(salesrepVO));
 				
-				$('#PONumber').val( salesrepVO.initial + "-" +  generateKey());
-				$('#refNumber').val($('#PONumber').val());
+				$('#refNumber').val( invoiceDAO.generateRefNum(salesrepVO.initial+ "-") );
+				$('#PONumber').val($('#refNumber').val());
 				$("#SalesRep").val(window.localStorage.getItem("salesRepName"));
 
 				var now = new Date();
@@ -365,9 +366,15 @@ table, th, td {
 
             <div data-role="fieldcontain">
               <div>
+              <label for="refNumber">Ref #:</label>
+              <input type="text" name="refNumber" id="refNumber" value="" readonly />
+              </div>
+            </div>
+
+            <div data-role="fieldcontain">
+              <div>
               <label for="PONumber">P.O. Number:</label>
               </div>
-              <input type="hidden" name="refNumber" id="refNumber" value=""  />
               <input type="text" name="PONumber" id="PONumber" value=""  />
               <div>
               <label for="SalesRep">Sales Rep:</label>

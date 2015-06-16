@@ -52,6 +52,37 @@
 		return false;
 	}
 
+	var whatToUpload = new Array();
+	var currentUp = 0;
+	function syncUp(){
+		if (itemsToSync==0){
+			alert("Nothing to do");
+	        return;
+		}
+		whatToUpload = $("#syncUpSelect").val();
+		currentUp = -1;
+		upNext();
+	}
+
+	function upNext(){
+		currentUp += 1;
+		if (currentUp<whatToUpload.length){
+			if (currentUp == 0){
+				 $("#synchDialog").popup("open"); 
+			}
+			console.log("uploading " +  whatToUpload[currentUp]);
+			$("#currentTask").html(whatToUpload[currentUp] + "...");
+			if (whatToUpload[currentUp] == "syncUpInvoices" ){
+				syncUpInvoices();
+			}
+		}else{
+			console.log("Synch upload finish!");
+			$("#currentTask").html("Finish!!");
+			setTimeout(function(){ $("#synchDialog").popup("close"); }, 3000);
+			; 
+		}
+	}
+
 	var whatToDownload = new Array();
 	var currentDown = 0;
 	function syncDown(){
@@ -100,6 +131,8 @@
 		whatToDownload = new Array();
 		currentDown = -1;
 		synchronizing = false;
+		whatToUpload = new Array();
+		currentUp = -1;
 	}
 
 
@@ -346,6 +379,19 @@
 	
 	function errInvoiceInsert(err){
 		alert("DB Error synch invoices: "+JSON.stringify(err));
+	}
+
+	function syncUpInvoices(form){
+		console.log("entre a syncUpInvoices");
+		invoiceDAO.listToUpload(function(results){
+			console.log("syncUpInvoices results=" +  JSON.stringify(results))
+			var mensaje = '<InvoiceAddRq requestID="invoiceAdd22"><InvoiceAdd><CustomerRef><ListID>800000E3-1420150612</ListID></CustomerRef><TxnDate>2015-06-12</TxnDate><RefNumber>1-201505311</RefNumber><TermsRef><ListID>80000006-1419636703</ListID></TermsRef><SalesRepRef><ListID>8000002E-1420150612</ListID></SalesRepRef>';	
+			
+			//consumeWS(mensaje, "JSON", receiveInvoicesMessage);
+		}, function(err){
+			alert("Fail sync upload Invoices " + JSON.stringify(err));
+		});
+		return false;
 	}
 
 
@@ -605,9 +651,9 @@
 
         
             <div class="ui-field-contain">
-			    <label for="select-sync-up">Upload</label>
-			    <select name="select-sync-up" id="select-sync-up" multiple="multiple" data-native-menu="false">
-			        <option>Choose options</option>
+			    <label for="syncUpSelect">Upload</label>
+			    <select name="syncUpSelect" id="syncUpSelect" multiple="multiple" data-native-menu="false">
+			        <option>Choose what to upload</option>
 			        <option value="syncUpInvoices">Upload Invoices</option>
 			        <option value="syncUpCustomers">Upload Customers</option>
 			    </select>

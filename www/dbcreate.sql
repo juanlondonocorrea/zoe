@@ -1,6 +1,6 @@
 ﻿/*
 Created: 29/04/2015
-Modified: 11/06/2015
+Modified: 16/06/2015
 Model: RE SQLite 3.7
 Database: SQLite 3.7
 */
@@ -19,6 +19,7 @@ DROP INDEX IF EXISTS IX_Relationship2;
 DROP INDEX IF EXISTS IX_invoice_custumer;
 DROP INDEX IF EXISTS IX_invoice_terms;
 DROP INDEX IF EXISTS IX_INVOICE_SYNC;
+DROP INDEX IF EXISTS IX_Relationship10;
 DROP INDEX IF EXISTS customer_idx1;
 DROP INDEX IF EXISTS IX_sales_rep_customer;
 DROP INDEX IF EXISTS IX_Relationship3;
@@ -193,13 +194,16 @@ CREATE TABLE invoice
   id_term TEXT,
   billAddress_addr3 TEXT,
   shipAddress_addr3 TEXT,
+  memo TEXT,
   zoeUpdateDate INTEGER,
   zoeSycDate INTEGER,
   needSync INTEGER,
   origin TEXT,
+  id_salesrep TEXT,
   CONSTRAINT Key4 PRIMARY KEY (id_invoice),
   CONSTRAINT invoice_custumer FOREIGN KEY (ListID) REFERENCES customer (ListID),
-  CONSTRAINT invoice_terms FOREIGN KEY (id_term) REFERENCES term (id_term)
+  CONSTRAINT invoice_terms FOREIGN KEY (id_term) REFERENCES term (id_term),
+  CONSTRAINT Relationship10 FOREIGN KEY (id_salesrep) REFERENCES salesrep (id_salesrep)
 );
 
 CREATE INDEX IX_invoice_custumer ON invoice (ListID);
@@ -207,6 +211,8 @@ CREATE INDEX IX_invoice_custumer ON invoice (ListID);
 CREATE INDEX IX_invoice_terms ON invoice (id_term);
 
 CREATE INDEX IX_INVOICE_SYNC ON invoice (needSync);
+
+CREATE INDEX IX_Relationship10 ON invoice (id_salesrep);
 
 -- Table invoice_item
 
