@@ -30,23 +30,20 @@
 			console.log("en pagebeforecreate config.html salesRepName=" + window.localStorage.getItem(
 	"salesRepName"));
 			initAnyPage(event.target);
+			initThisPage(event);
+		});
+
+	function initThisPage(event){
 			$('#salesRepName').val(window.localStorage.getItem("salesRepName"));	
 			if (!window.localStorage.getItem("syncURL")){
 				window.localStorage.setItem("syncURL","http://24.234.187.107:54320/SyncService");
 			}
 			$('#syncURL').val(window.localStorage.getItem("syncURL"));	
 			$('#submitConfig').click(submitFormConfig);	
-			$('#syncSalesRep').click(syncSalesRep);	
-			$('#syncCustomers').click(syncCustomers);	
-			$('#syncInvoices').click(syncInvoices);	
-			$('#syncInventory').click(syncInventoryItems);	
-			$('#syncOthers').click(syncOthers);	
-			$('#syncPricelevel').click(syncPricelevel);	
 			$('#createDB').click(checkDatabase);	
-			$('#syncAll').click(syncAll);	
 			$('#testGetInvoice').click(testGetInvoice);	
 			logZoe("config.html listo pagebeforecreate");
-		});
+		}		
 
 	function submitFormConfig(form) {
 		window.localStorage.setItem("salesRepName", $('#salesRepName').val());
@@ -55,17 +52,56 @@
 		return false;
 	}
 
-//SYCHRONIZATION ALL
-var synchronizingAll = false;
-function syncAll(form){
-	try{
-		synchronizingAll=true;
-		syncSalesRep();
-	}catch(exception){
-		console.log(JSON.stringify(exception));
+	var whatToDownload = new Array();
+	var currentDown = 0;
+	function syncDown(){
+		if (itemsToSync>0){
+			alert("Cannot download data due items to sync :"  + itemsToSync);
+	        return;
+		}
+		whatToDownload = $("#syncDownSelect").val();
+		currentDown = -1;
+		downNext();
 	}
-	return false;
-}
+
+	function downNext(){
+		currentDown += 1;
+		if (currentDown<whatToDownload.length){
+			if (currentDown == 0){
+				 $("#synchDialog").popup("open"); 
+			}
+			console.log("downloading " +  whatToDownload[currentDown]);
+			$("#currentTask").html(whatToDownload[currentDown] + "...");
+			if (whatToDownload[currentDown] == "syncDownSalesRep" ){
+				syncSalesRep();
+			}else if (whatToDownload[currentDown] == "syncTaxes" ){
+				syncTaxes();
+			}else if (whatToDownload[currentDown] == "syncTerms" ){
+				syncTerms();
+			}else if (whatToDownload[currentDown] == "syncDownInventory" ){
+				syncInventoryItems();
+			}else if (whatToDownload[currentDown] == "syncDownPricelevel" ){
+				syncPricelevel();
+			}else if (whatToDownload[currentDown] == "syncDownInvoices" ){
+				syncInvoices();
+			}else if (whatToDownload[currentDown] == "syncDownCustomers" ){
+				syncCustomers();
+			}
+		}else{
+			console.log("Synch down finish!");
+			$("#currentTask").html("Finish!!");
+			setTimeout(function(){ $("#synchDialog").popup("close"); }, 3000);
+			; 
+		}
+	}
+
+	function cancelSync () {
+		$("#synchDialog").popup("close");
+		whatToDownload = new Array();
+		currentDown = -1;
+		synchronizing = false;
+	}
+
 
 //SYNCHRONIZATION Employee and Salesrep	
 	function syncSalesRep(form){
@@ -109,12 +145,7 @@ function syncAll(form){
 			
 	}
 	function successSyncSalesRep(){
-		if (synchronizingAll){
-			syncOthers();
-		}else{
-			alert("Success synch salesrep");
-		}
-		return false;
+		downNext();
 	}
 	
 	function errSalesRepSync(err){
@@ -222,11 +253,7 @@ function syncAll(form){
 
 
 	function successCustomerInsert(){
-		if (synchronizingAll){
-			syncInventoryItems();
-		}else{
-			alert("Success synch customers");
-		}
+		downNext();
 	}
 	
 	function errCustomerInsert(err){
@@ -314,12 +341,7 @@ function syncAll(form){
 
 
 	function successInvoiceInsert(){
-		if (synchronizingAll){
-			synchronizingAll = false;
-			alert("Success synch all");
-		}else{
-			alert("Success synch Invoices");
-		}
+		downNext();
 	}
 	
 	function errInvoiceInsert(err){
@@ -394,11 +416,7 @@ function syncAll(form){
 
 
 	function successInventoryInsert(){
-		if (synchronizingAll){
-			syncPricelevel();
-		}else{
-			alert("Success synch inventory");
-		}
+		downNext();
 	}
 	
 	function errInventoryInsert(err){
@@ -406,8 +424,8 @@ function syncAll(form){
 	}
 
 //SYNCHRONIZATION Others	
-	function syncOthers(form){
-		console.log("entre a syncOthers");
+	function syncTerms(form){
+		console.log("entre a syncTerms");
 		var mensaje = 	
 		'<TermsQueryRq  requestID="Term1"><ActiveStatus>ActiveOnly</ActiveStatus></TermsQueryRq>';
 		var cache="term";
@@ -439,7 +457,7 @@ function syncAll(form){
 
 
 	function successTermInsert(){
-		syncTaxes();
+		downNext();
 	}
 	
 	function errTermInsert(err){
@@ -477,11 +495,7 @@ function syncAll(form){
 
 
 	function successTaxInsert(){
-		if (synchronizingAll){
-			syncCustomers();
-		}else{
-			alert("Success synch term and salestax");
-		}
+		downNext();
 	}
 	
 	function errTaxInsert(err){
@@ -536,12 +550,7 @@ function syncAll(form){
 
 
 	function successPricelevelInsert(){
-		if (synchronizingAll){
-			syncInvoices();
-		}
-		else{
-			alert("Succes sync priceLevel");
-		}
+		downNext();
 	}
 	
 	function errPricelevelInsert(err){
@@ -574,26 +583,47 @@ function syncAll(form){
                     <lable for="syncURL">Synchronization URL</lable><input type="text" id="syncURL" name="syncURL" placeholder="syncURL"><br>
                                  
                         <input id="submitConfig" type="submit" value="Save">
-		                <button class="ui-btn" id="syncSalesRep">Synch Sales Rep</button>
-		                <button class="ui-btn" id="syncOthers">Synch Sales Taxes and Terms</button>
-		                <button class="ui-btn" id="syncCustomers">Synch Customers</button>
-		                <button class="ui-btn" id="syncInvoices">Synch Invoices</button>
-		                <button class="ui-btn" id="syncInventory">Synch Inventory</button>
-		                <button class="ui-btn" id="syncPricelevel">Synch pricelevel</button>
-		                <button class="ui-btn" id="syncAll">Sync ALL</button>
 		                <button class="ui-btn" id="createDB">create database</button>
 		                <button class="ui-btn" id="testGetInvoice">testGetInvoice</button>
                 </form>
             </div>
+
+            <div class="ui-field-contain">
+			    <label for="ssyncDownSelect">Download</label>
+			    <select name="syncDownSelect" id="syncDownSelect" multiple="multiple" data-native-menu="false">
+			        <option>Choose what to download </option>
+			        <option value="syncDownSalesRep">Sales Rep</option>
+			        <option value="syncTaxes">Taxes</option>
+			        <option value="syncTerms">Terms</option>
+			        <option value="syncDownInventory">Inventory</option>
+			        <option value="syncDownPricelevel">Pricelevel</option>
+			        <option value="syncDownInvoices">Invoices</option>
+			        <option value="syncDownCustomers">Customers</option>
+			    </select>
+	            <button class="ui-btn" id="syncDown" onclick="syncDown(); return false;">Sync</button>
+			</div>
+
         
+            <div class="ui-field-contain">
+			    <label for="select-sync-up">Upload</label>
+			    <select name="select-sync-up" id="select-sync-up" multiple="multiple" data-native-menu="false">
+			        <option>Choose options</option>
+			        <option value="syncUpInvoices">Upload Invoices</option>
+			        <option value="syncUpCustomers">Upload Customers</option>
+			    </select>
+		        <button class="ui-btn" id="syncUp" onclick="syncUp(); return false;">Sync</button>
+		</div>
+
+    
+
 
 <div data-role="popup" id="synchDialog" data-dismissible="false" style="width:300px">
     <div data-role="header">
     Synchronizing
     </div>
     <div role="main" class="ui-content">
-		  <p>Please wait....</p>
-      		<a href="#" class="ui-btn" data-rel="back">Cancel</a>
+		  <span id="currentTask">...</span>
+  		<a href="#" class="ui-btn" data-rel="back" onclick="cancelSync(); return false;">Cancel</a>
 	</div>
 </div>
 
