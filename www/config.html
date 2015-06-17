@@ -19,6 +19,7 @@
 <script src="js/zoe/salesRepDAO.js" type="text/javascript"></script>
 <script src="js/zoe/customerDAO.js" type="text/javascript"></script>
 <script src="js/zoe/invoiceDAO.js" type="text/javascript"></script>
+<script src="js/zoe/customerMsgDAO.js" type="text/javascript"></script>
 <script src="js/zoe/termDAO.js" type="text/javascript"></script>
 <script src="js/zoe/taxDAO.js" type="text/javascript"></script>
 <script src="js/zoe/inventoryDAO.js" type="text/javascript"></script>
@@ -87,8 +88,9 @@
 	var currentDown = 0;
 	function syncDown(){
 		if (itemsToSync>0){
-			alert("Cannot download data due items to sync :"  + itemsToSync);
-	        return;
+			var willcontinue = confirm("Items to sync found (" + itemsToSync + ").  Are you really sure to download server data?"  + itemsToSync);
+			if (!willcontinue)
+		        return;
 		}
 		whatToDownload = $("#syncDownSelect").val();
 		currentDown = -1;
@@ -117,7 +119,10 @@
 				syncInvoices();
 			}else if (whatToDownload[currentDown] == "syncDownCustomers" ){
 				syncCustomers();
+			}else if (whatToDownload[currentDown] == "syncCustomerMsgs" ){
+				syncCustomerMsgs();
 			}
+			
 		}else{
 			console.log("Synch down finish!");
 			$("#currentTask").html("Finish!!");
@@ -344,6 +349,8 @@
 				salesTaxTotal : invoices[i].SalesTaxTotal,
 				shipDate : invoices[i].ShipDate,
 				subtotal : invoices[i].Subtotal,
+				customerMsg_ListID: invoices[i].CustomerMsgRef?invoices[i].CustomerMsgRef.ListID:null,
+				id_salesrep:invoices[i].SalesRepRef?invoices[i].SalesRepRef.ListID:null,
 				id_term: typeof invoices[i].TermsRef != "undefined"?invoices[i].TermsRef.ListID:null,
 				items: new Array()
 			}
@@ -603,6 +610,45 @@
 		alert("DB Error synch princelevels: "+JSON.stringify(err));
 	}
 	
+//SYNC Customer MSgs
+
+	function syncCustomerMsgs(form){
+		console.log("entre a SyncCustomerMsgs");
+		var mensaje = 	
+		'<CustomerMsgQueryRq  requestID="customermsg1"></CustomerMsgQueryRq>';
+		var cache="customerMsg";
+		
+		consumeWS(mensaje, "JSON", receiveCustomerMsgs, cache);
+		return false;
+	}
+
+	function receiveCustomerMsgs(message){
+		var customerMsgs = message.CustomerMsgQueryRs.CustomerMsgRet;
+		var i;
+		var customerMsgsVO = [];
+		for (i=0;i<customerMsgs.length;i++){
+			logZoe("customerMsgs[i]=" + JSON.stringify(customerMsgs[i]));
+			var customerMsgVO = {
+				ListID:customerMsgs[i].ListID,
+				FullName : customerMsgs[i].FullName
+			}
+			customerMsgsVO[i] = customerMsgVO;
+		}
+			
+		customerMsgDAO.deleteAll(errCustomerMsgInsert);
+		customerMsgDAO.store(customerMsgsVO, errCustomerMsgInsert, successCustomerMsgInsert);
+	}
+
+
+	function successCustomerMsgInsert(){
+		downNext();
+	}
+	
+	function errCustomerMsgInsert(err){
+		alert("DB Error synch CustomerMsg: "+JSON.stringify(err));
+	}
+	
+	
 	
 	//TESTS
 	function testGetInvoice(){
@@ -641,6 +687,7 @@
 			        <option value="syncDownSalesRep">Sales Rep</option>
 			        <option value="syncTaxes">Taxes</option>
 			        <option value="syncTerms">Terms</option>
+			        <option value="syncCustomerMsgs">Customer Messages</option>
 			        <option value="syncDownInventory">Inventory</option>
 			        <option value="syncDownPricelevel">Pricelevel</option>
 			        <option value="syncDownInvoices">Invoices</option>

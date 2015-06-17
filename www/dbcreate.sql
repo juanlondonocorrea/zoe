@@ -20,6 +20,7 @@ DROP INDEX IF EXISTS IX_invoice_custumer;
 DROP INDEX IF EXISTS IX_invoice_terms;
 DROP INDEX IF EXISTS IX_INVOICE_SYNC;
 DROP INDEX IF EXISTS IX_Relationship10;
+DROP INDEX IF EXISTS IX_Relationship11;
 DROP INDEX IF EXISTS customer_idx1;
 DROP INDEX IF EXISTS IX_sales_rep_customer;
 DROP INDEX IF EXISTS IX_Relationship3;
@@ -30,6 +31,7 @@ DROP INDEX IF EXISTS idx_salesrep_1;
 
 -- Drop tables section ---------------------------------------------------
 
+DROP TABLE IF EXISTS customer_msg;
 DROP TABLE IF EXISTS pricelevel_item;
 DROP TABLE IF EXISTS pricelevel;
 DROP TABLE IF EXISTS invoice_item;
@@ -193,6 +195,7 @@ CREATE TABLE invoice
   subtotal NUMERIC,
   id_term TEXT,
   billAddress_addr3 TEXT,
+  customerMsg_ListID TEXT,
   shipAddress_addr3 TEXT,
   memo TEXT,
   zoeUpdateDate INTEGER,
@@ -203,7 +206,8 @@ CREATE TABLE invoice
   CONSTRAINT Key4 PRIMARY KEY (id_invoice),
   CONSTRAINT invoice_custumer FOREIGN KEY (ListID) REFERENCES customer (ListID),
   CONSTRAINT invoice_terms FOREIGN KEY (id_term) REFERENCES term (id_term),
-  CONSTRAINT Relationship10 FOREIGN KEY (id_salesrep) REFERENCES salesrep (id_salesrep)
+  CONSTRAINT Relationship10 FOREIGN KEY (id_salesrep) REFERENCES salesrep (id_salesrep),
+  CONSTRAINT Relationship11 FOREIGN KEY (customerMsg_ListID) REFERENCES customer_msg (ListID)
 );
 
 CREATE INDEX IX_invoice_custumer ON invoice (ListID);
@@ -213,6 +217,8 @@ CREATE INDEX IX_invoice_terms ON invoice (id_term);
 CREATE INDEX IX_INVOICE_SYNC ON invoice (needSync);
 
 CREATE INDEX IX_Relationship10 ON invoice (id_salesrep);
+
+CREATE INDEX IX_Relationship11 ON invoice (customerMsg_ListID);
 
 -- Table invoice_item
 
@@ -259,6 +265,15 @@ CREATE TABLE pricelevel_item
   CONSTRAINT Key10 PRIMARY KEY (pricelevel_ListID,inventory_ListID),
   CONSTRAINT Relationship8 FOREIGN KEY (pricelevel_ListID) REFERENCES pricelevel (ListID),
   CONSTRAINT Relationship9 FOREIGN KEY (inventory_ListID) REFERENCES Inventory (ListID)
+);
+
+-- Table customer_msg
+
+CREATE TABLE customer_msg
+(
+  ListID TEXT NOT NULL,
+  FullName TEXT,
+  CONSTRAINT Key11 PRIMARY KEY (ListID)
 );
 
 

@@ -18,6 +18,7 @@
   <script src="js/zoe/customerDAO.js"></script>
   <script src="js/zoe/termDAO.js"></script>
   <script src="js/zoe/taxDAO.js"></script>
+  <script src="js/zoe/customerMsgDAO.js"></script>
   <script>
 			$(document).bind("pagebeforecreate", function(event) {
 				console.log("Cargar Clientes");
@@ -33,6 +34,7 @@
 				customerDAO.list(receiveCustomers,errReceive);
 				termDAO.list(receiveTerms,errReceive);
 				taxDAO.list(receiveTaxes,errReceive);
+				customerMsgDAO.list(receiveCustomerMsgs,errReceive);
 				salesRepDAO.getByName(window.localStorage.getItem("salesRepName"),receiveSalesrep);
 				
 			}
@@ -94,6 +96,20 @@
 					$('#selTax').append('<option value="' + list[i].ListID +'">'+list[i].Name+'</option>');
 				}
 				$('#selTax').trigger("chosen:updated");
+			}
+
+			var listCustomerMsgs;
+			var customerMsgSelectedIndex;
+			function receiveCustomerMsgs(list){
+				listCustomerMsgs = list;
+				console.log("receiveCustomerMsgs length="+list.length); 
+				$('#selCustomerMsg').empty();
+				$('#selCustomerMsg').append('<option value="choose-one" data-placeholder="true">Choose one...</option>');
+				for (var i in list) {
+					console.log("customerMsg =" + JSON.stringify(list[i]));
+					$('#selCustomerMsg').append('<option value="' + list[i].ListID +'">'+list[i].FullName+'</option>');
+				}
+				$('#selCustomerMsg').trigger("chosen:updated");
 			}
 
 			var customerSelectedIndex;
@@ -280,6 +296,7 @@
 					shipAddress_city:customer.shipAddressCity,
 					shipAddress_state:customer.shipAddressState,
 					shipAddress_postalcode:customer.shipAddressZipcode,
+					id_salesrep:salesrepVO.id_salesrep,
 					isPaid:false,
 					isPending:true,
 					refNumber:$('#refNumber').val(),
@@ -495,13 +512,13 @@ table, th, td {
 
            <div data-role="fieldcontain">
               <div>
-              <label for="CustomerMessage">Customer Message:</label>
+              <label for="selCustomerMsg">Customer Message:</label>
               </div>
-              <input type="text" name="CustomerMessage" id="CustomerMessage" value=""  />
+              <select name="selCustomerMsg" id="selCustomerMsg"></select>
               <div>
-              <label for="AddAMemo">Add a memo:</label>
+              <label for="memo">Add a memo:</label>
               </div>
-              <input type="text" name="AddAMemo" id="AddAMemo" value=""  />              
+              <input type="text" name="memo" id="memo" value=""  />              
             </div>
             
                         
