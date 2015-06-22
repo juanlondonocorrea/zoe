@@ -6,6 +6,7 @@ var invoiceDAO = {listBySalesrep:listInvoicesBySalesrep,
 				getById:getInvoiceById, 
 				store:storeInvoice, 
 				deleteAll:deleteAllInvoices, 
+				delete:deleteInvoice, 
 				markToSync:markToSyncInvoice, 
 				markSynchronized:doMarkSynchorinizedInvoice,
 				generateRefNum:doGenerateRefNum
@@ -87,6 +88,14 @@ function deleteAllInvoices(aErrFunc,successCB){
 	db.transaction(doDeleteAllInvoices, errorCB, successCB);
 }
 
+function deleteInvoice(idInvoice,aErrFunc,successCB){
+	db = openDatabaseZoe();
+	logZoe("deleteInvoice db=" + db);
+	filterDataInvoice = idInvoice;
+	invoiceErrFunc = aErrFunc;
+	db.transaction(doDeleteInvoice, errorCB, successCB);
+}
+
 function markToSyncInvoice(id_invoice,aErrFunc,successCB){
 	db = openDatabaseZoe();
 	logZoe("markToSyncInvoice db=" + db);
@@ -110,23 +119,27 @@ function markSynchronizedCustomer(id_invoice,aErrFunc,successCB){
 
 function doSelectInvoice(tx){
 	logZoe("doSelectInvoice filterData=" + filterDataInvoice);
-	tx.executeSql("SELECT id_invoice, ListID, po_number, dueDate, appliedAmount, balanceRemaining, billAddress_addr1, billAddress_addr2, billAddress_addr3, billAddress_city, billAddress_state, billAddress_postalcode, shipAddress_addr1, shipAddress_addr2, shipAddress_addr3, shipAddress_city, shipAddress_state, shipAddress_postalcode, isPaid, isPending, refNumber, salesTaxPercentage, salesTaxTotal, shipDate, subtotal, id_salesrep, customerMsg_ListID FROM invoice Where id_invoice = ?", [filterDataInvoice],invoiceLocalReceiveFunction, invoiceErrFunc);
+	tx.executeSql("SELECT invoice.*, term.name AS term_name, cm.FullName as customer_msg_FullName FROM invoice" +
+	" LEFT JOIN term ON term.id_term = invoice.id_term " +
+	" LEFT JOIN customer_msg as cm ON cm.ListID = invoice.customerMsg_ListID " +
+	" WHERE invoice.id_invoice = ?", [filterDataInvoice],invoiceLocalReceiveFunction, invoiceErrFunc);
 }
 
 function doSalesrepInvoices(tx){
 	logZoe("doSelectSelesrepInvoices");
-	tx.executeSql("SELECT id_invoice, ListID, po_number, dueDate, appliedAmount, balanceRemaining, billAddress_addr1, billAddress_addr2, billAddress_addr3, billAddress_city, billAddress_state, billAddress_postalcode, shipAddress_addr1, shipAddress_addr2, shipAddress_addr3, shipAddress_city, shipAddress_state, shipAddress_postalcode, isPaid, isPending, refNumber, salesTaxPercentage, salesTaxTotal, shipDate, subtotal, id_term,id_salesrep, customerMsg_ListID FROM invoice WHERE id_salesrep = ?", [filterDataInvoice],invoiceLocalListReceiveFunction, invoiceErrFunc);
+	tx.executeSql("SELECT id_invoice, ListID, po_number, dueDate, appliedAmount, balanceRemaining, billAddress_addr1, billAddress_addr2, billAddress_addr3, billAddress_city, billAddress_state, billAddress_postalcode, shipAddress_addr1, shipAddress_addr2, shipAddress_addr3, shipAddress_city, shipAddress_state, shipAddress_postalcode, isPaid, isPending, refNumber, salesTaxPercentage, salesTaxTotal, shipDate, subtotal, id_term,id_salesrep, customerMsg_ListID, memo FROM invoice WHERE id_salesrep = ?", [filterDataInvoice],invoiceLocalListReceiveFunction, invoiceErrFunc);
 }
 
 function doListInvoicesToUpload(tx){
 	logZoe("doListInvoicesToUpload");
-	tx.executeSql("SELECT invoice.*, invoice_item.* FROM invoice LEFT JOIN invoice_item ON invoice.id_invoice = invoice_item.id_invoice WHERE needSync = 1",[], invoiceLocalListToUploadReceiveFunction, invoiceErrFunc);
+	tx.executeSql("SELECT invoice.*, invoice_item.*, inventorySite_ListID FROM invoice LEFT JOIN invoice_item ON invoice.id_invoice = invoice_item.id_invoice " +
+	"LEFT JOIN inventory ON invoice_item.inventory_ListID = inventory.ListID  WHERE needSync = 1",[], invoiceLocalListToUploadReceiveFunction, invoiceErrFunc);
  }
 
 
 function doCustomerInvoices(tx){
 	logZoe("doSelectSelesrepInvoices");
-	tx.executeSql("SELECT id_invoice, ListID, po_number, dueDate, appliedAmount, balanceRemaining, billAddress_addr1, billAddress_addr2, billAddress_addr3, billAddress_city, billAddress_state, billAddress_postalcode, shipAddress_addr1, shipAddress_addr2, shipAddress_addr3, shipAddress_city, shipAddress_state, shipAddress_postalcode, isPaid, isPending, refNumber, salesTaxPercentage, salesTaxTotal, shipDate, subtotal, id_term, id_salesrep, customerMsg_ListID FROM invoice WHERE ListID = ?", [filterDataInvoice],invoiceLocalListReceiveFunction, invoiceErrFunc);
+	tx.executeSql("SELECT id_invoice, ListID, po_number, dueDate, appliedAmount, balanceRemaining, billAddress_addr1, billAddress_addr2, billAddress_addr3, billAddress_city, billAddress_state, billAddress_postalcode, shipAddress_addr1, shipAddress_addr2, shipAddress_addr3, shipAddress_city, shipAddress_state, shipAddress_postalcode, isPaid, isPending, refNumber, salesTaxPercentage, salesTaxTotal, shipDate, subtotal, id_term, id_salesrep, customerMsg_ListID, memo FROM invoice WHERE ListID = ?", [filterDataInvoice],invoiceLocalListReceiveFunction, invoiceErrFunc);
 }
 
 function invoiceLocalReceiveFunction(tx,results){
@@ -137,7 +150,9 @@ function invoiceLocalReceiveFunction(tx,results){
 	logZoe("localReceiveFunction1 " + JSON.stringify(results.rows.item(0)));
 		invoiceVO=results.rows.item(0);
 			if (includeInvoiceDetails){
-					tx.executeSql("SELECT LineID, id_invoice, Inventory_ListID, Desc, Quantity, Rate, Amount, SalesTax_ListID FROM invoice_item Where id_invoice = ?", [filterDataInvoice],invoiceItemsLocalReceiveFunction, invoiceErrFunc);
+					tx.executeSql("SELECT LineID, id_invoice, Inventory_ListID, Desc, Quantity, Rate, Amount, SalesTax_ListID, salesTax.Name salesTax_Name FROM invoice_item " +
+					" LEFT JOIN  salesTax ON salesTax.ListID = invoice_item.SalesTax_ListID " +
+					" Where id_invoice = ?", [filterDataInvoice],invoiceItemsLocalReceiveFunction, invoiceErrFunc);
 		
 			}else{
 				invoiceReceiveFunction(invoiceVO);
@@ -221,6 +236,7 @@ function invoiceLocalListToUploadReceiveFunction(tx,results){
 				origin: rec.origin,
 				id_salesrep: rec.id_salesrep,
 				customerMsg_ListID: rec.customerMsg_ListID,
+				memo: rec.memo,
 				items: new Array()
 			}
 			arrayInvoices[indexInvoice] = invoiceVO;
@@ -230,6 +246,7 @@ function invoiceLocalListToUploadReceiveFunction(tx,results){
 			  	LineID:rec.LineID,
   				id_invoice:rec.id_invoice,
 				Inventory_ListID:rec.Inventory_ListID,
+				InventorySite_ListID:rec.InventorySite_ListID,
 				Desc:rec.Desc,
 				Quantity:rec.Quantity,
 				Rate:rec.Rate,
@@ -239,7 +256,9 @@ function invoiceLocalListToUploadReceiveFunction(tx,results){
 
 		invoiceVO.items[indexItem] = invoiceItemVO;
 		indexItem +=1;
+		id_invoice_ant = rec.id_invoice;
 	}
+	console.log("arrayInvoices=" + JSON.stringify(arrayInvoices));
 	invoiceReceiveListFunction(arrayInvoices);
 }
 
@@ -273,7 +292,7 @@ function doStoreInvoice(tx){
 }
 
 function doStoreOneInvoice(tx, rec){
-		tx.executeSql('INSERT OR REPLACE INTO invoice(id_invoice, ListID, po_number, dueDate, appliedAmount, balanceRemaining, billAddress_addr1, billAddress_addr2, billAddress_addr3, billAddress_city, billAddress_state, billAddress_postalcode, shipAddress_addr1, shipAddress_addr2, shipAddress_addr3, shipAddress_city, shipAddress_state, shipAddress_postalcode, isPaid, isPending, refNumber, salesTaxPercentage, salesTaxTotal, shipDate, subtotal, id_term) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?, ?)',[rec.id_invoice, rec.ListID, ifUndefNull(rec.po_number), ifUndefNull(rec.dueDate), ifUndefNull(rec.appliedAmount), ifUndefNull(rec.balanceRemaining), ifUndefNull(rec.billAddress_addr1), ifUndefNull(rec.billAddress_addr2), ifUndefNull(rec.billAddress_addr3), ifUndefNull(rec.billAddress_city), ifUndefNull(rec.billAddress_state), ifUndefNull(rec.billAddress_postalcode), ifUndefNull(rec.shipAddress_addr1), ifUndefNull(rec.shipAddress_addr2), ifUndefNull(rec.shipAddress_addr3), ifUndefNull(rec.shipAddress_city), ifUndefNull(rec.shipAddress_state), ifUndefNull(rec.shipAddress_postalcode), ifUndefNull(rec.isPaid), ifUndefNull(rec.isPending), ifUndefNull(rec.refNumber), ifUndefNull(rec.TaxPercentage), ifUndefNull(rec.salesTaxTotal), ifUndefNull(rec.shipDate), ifUndefNull(rec.subtotal), ifUndefNull(rec.id_term), ifUndefNull(rec.id_salesrep), ifUndefNull(rec.customerMsg_ListID)]);
+		tx.executeSql('INSERT OR REPLACE INTO invoice(id_invoice, ListID, po_number, dueDate, appliedAmount, balanceRemaining, billAddress_addr1, billAddress_addr2, billAddress_addr3, billAddress_city, billAddress_state, billAddress_postalcode, shipAddress_addr1, shipAddress_addr2, shipAddress_addr3, shipAddress_city, shipAddress_state, shipAddress_postalcode, isPaid, isPending, refNumber, salesTaxPercentage, salesTaxTotal, shipDate, subtotal, id_term, id_salesrep, customerMsg_ListID, memo) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?, ?, ?)',[rec.id_invoice, rec.ListID, ifUndefNull(rec.po_number), ifUndefNull(rec.dueDate), ifUndefNull(rec.appliedAmount), ifUndefNull(rec.balanceRemaining), ifUndefNull(rec.billAddress_addr1), ifUndefNull(rec.billAddress_addr2), ifUndefNull(rec.billAddress_addr3), ifUndefNull(rec.billAddress_city), ifUndefNull(rec.billAddress_state), ifUndefNull(rec.billAddress_postalcode), ifUndefNull(rec.shipAddress_addr1), ifUndefNull(rec.shipAddress_addr2), ifUndefNull(rec.shipAddress_addr3), ifUndefNull(rec.shipAddress_city), ifUndefNull(rec.shipAddress_state), ifUndefNull(rec.shipAddress_postalcode), ifUndefNull(rec.isPaid), ifUndefNull(rec.isPending), ifUndefNull(rec.refNumber), ifUndefNull(rec.TaxPercentage), ifUndefNull(rec.salesTaxTotal), ifUndefNull(rec.shipDate), ifUndefNull(rec.subtotal), ifUndefNull(rec.id_term), ifUndefNull(rec.id_salesrep), ifUndefNull(rec.customerMsg_ListID), ifUndefNull(rec.memo)] );
 		
 	if (invoiceOrigin){
 		tx.executeSql('UPDATE invoice set origin = ? WHERE id_invoice = ?',[invoiceOrigin,rec.id_invoice]);
@@ -294,6 +313,11 @@ function doStoreOneInvoice(tx, rec){
 function doDeleteAllInvoices(tx){
 	tx.executeSql('DELETE FROM invoice_item',[]);
 	tx.executeSql('DELETE FROM invoice',[]);
+}
+
+function doDeleteInvoice(tx){
+	tx.executeSql('DELETE FROM invoice_item where id_invoice=?',[filterDataInvoice]);
+	tx.executeSql('DELETE FROM invoice where id_invoice = ?',[filterDataInvoice]);
 }
 
 function doMarkToSyncInvoice(tx){

@@ -204,10 +204,10 @@
 					console.log("renderItems currentItems[i]=" + JSON.stringify(currentItems[i]));
 					html += "<tr>\n";
 					html +=  "<td><a class='ui-btn ui-icon-delete ui-btn-icon-notext ui-corner-all rmItem' id='"+ i+  "'></a></td>\n";
-					html +=  "<td>"+currentItems[i].Desc+"</td>\n";
-					html += "<td>"+currentItems[i].Quantity+"</td>\n";
-					html += "<td>$"+parseFloat(currentItems[i].Rate).toFixed(2)+"</td>\n";
-					html += "<td>$"+parseFloat(currentItems[i].Amount).toFixed(2)+"</td>\n";
+					html +=  "<td><font size=1>"+currentItems[i].Desc+"</font></td>\n";
+					html += "<td><div align='right'><font size=1>"+currentItems[i].Quantity+"</div></font></td>\n";
+					html += "<td><div align='right'><font size=1>"+parseFloat(currentItems[i].Rate).toFixed(2)+"<font></div></td>\n";
+					html += "<td><div align='right'><font size=1>"+parseFloat(currentItems[i].Amount).toFixed(2)+"</font></div></td>\n";
 					html +=  "</tr>\n";
 					totalQuantity += currentItems[i].Quantity*1;
 					totalAmount += currentItems[i].Amount*1;
@@ -216,9 +216,9 @@
 				$("#tableBodyItems").html(html);
 				
 				html = "<tr><td></td><td>Totals</td>";
-                html += "<td><div align='right'>$" + parseFloat(totalQuantity).toFixed(2) + "</div></td>";      
+                html += "<td><div align='right'><font size=1>" + parseFloat(totalQuantity) + "</font></div></td>";      
                 html += "<td><div align='right'></div></td>";      
-                html += "<td><div align='right'>$" + parseFloat(totalAmount).toFixed(2) + "</div></td>";      
+                html += "<td><div align='right'><font size=1>" + parseFloat(totalAmount).toFixed(2) + "</font></div></td>";      
                 html += "</tr>";
 				
 				$("#tableFoot").html(html);
@@ -305,6 +305,8 @@
 					shipDate:$("#Date").val(),
 					subtotal:totalAmount,
 					id_term:$("#selTerm").val(),
+					memo:$("#memo").val(),
+					customerMsg_ListID:$("#selCustomerMsg").val(),
 					items: new Array()
 				}
 			
@@ -362,6 +364,7 @@ table, th, td {
               <select name="selTerm" id="selTerm" onChange="selTermChange()">
               </select>
             </div>
+            
             <div class="ui-grid-a" style="height:95px">
               <div class="ui-block-a" style="height:100%">            
                 <div data-role="fieldcontain">
@@ -381,23 +384,29 @@ table, th, td {
 			</div>
            </div>
 
-            <div data-role="fieldcontain">
-              <div>
-              <label for="refNumber">Ref #:</label>
-              <input type="text" name="refNumber" id="refNumber" value="" readonly />
+            <div class="ui-grid-a" style="height:95px">
+              <div class="ui-block-a" style="height:100%">            
+                <div data-role="fieldcontain">
+                  <div>
+                  <label for="refNumber">Ref#:</label>
+                  </div>
+                  <input type="text" name="refNumber" id="refNumber" value="" readonly />
+                </div>
               </div>
-            </div>
+            <div class="ui-block-b" style="height:100%">
+              <div data-role="fieldcontain">
+                <div>
+                <label for="PONumber">PO Number:</label>
+                </div>
+                <input type="text" name="PONumber" id="PONumber" value=""/>
+              </div>
+			</div>
+           </div>
 
-            <div data-role="fieldcontain">
-              <div>
-              <label for="PONumber">P.O. Number:</label>
-              </div>
-              <input type="text" name="PONumber" id="PONumber" value=""  />
-              <div>
-              <label for="SalesRep">Sales Rep:</label>
-              </div>
-              <input type="text" name="SalesRep" id="SalesRep" readonly  />              
-            </div>
+              <div data-role="fieldcontain">
+	              <label for="SalesRep">Sales Rep:</label>
+	              <input type="text" name="SalesRep" id="SalesRep" readonly  />              
+             </div>
 
 
 
@@ -518,7 +527,7 @@ table, th, td {
               <div>
               <label for="memo">Add a memo:</label>
               </div>
-              <input type="text" name="memo" id="memo" value=""  />              
+		      <textarea rows="8" name="memo" id="memo"></textarea>
             </div>
             
                         

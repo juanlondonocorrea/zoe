@@ -1,6 +1,6 @@
 ﻿/*
 Created: 29/04/2015
-Modified: 16/06/2015
+Modified: 20/06/2015
 Model: RE SQLite 3.7
 Database: SQLite 3.7
 */
@@ -10,6 +10,7 @@ Database: SQLite 3.7
 
 -- Drop indexes section -------------------------------------------------
 
+DROP INDEX IF EXISTS IX_VENDOR_NAME;
 DROP INDEX IF EXISTS IX_Inventory_fullName;
 DROP INDEX IF EXISTS IX_Relationship6;
 DROP INDEX IF EXISTS IX_Inventory_salesDesc;
@@ -27,10 +28,12 @@ DROP INDEX IF EXISTS IX_Relationship3;
 DROP INDEX IF EXISTS IX_Customer_Name;
 DROP INDEX IF EXISTS IX_Relationship7;
 DROP INDEX IF EXISTS IX_CUSTOMER_SYNC;
+DROP INDEX IF EXISTS IX_Relationship12;
 DROP INDEX IF EXISTS idx_salesrep_1;
 
 -- Drop tables section ---------------------------------------------------
 
+DROP TABLE IF EXISTS Vendor;
 DROP TABLE IF EXISTS customer_msg;
 DROP TABLE IF EXISTS pricelevel_item;
 DROP TABLE IF EXISTS pricelevel;
@@ -148,10 +151,12 @@ CREATE TABLE customer
   needSync INTEGER,
   pricelevel_ListID TEXT,
   origin TEXT,
+  vendor_ListID TEXT,
   CONSTRAINT Key3 PRIMARY KEY (ListID),
   CONSTRAINT sales_rep_customer FOREIGN KEY (id_salesrep) REFERENCES salesrep (id_salesrep),
   CONSTRAINT Relationship3 FOREIGN KEY (id_term) REFERENCES term (id_term),
-  CONSTRAINT Relationship7 FOREIGN KEY (pricelevel_ListID) REFERENCES pricelevel (ListID)
+  CONSTRAINT Relationship7 FOREIGN KEY (pricelevel_ListID) REFERENCES pricelevel (ListID),
+  CONSTRAINT Relationship12 FOREIGN KEY (vendor_ListID) REFERENCES Vendor (ListID)
 );
 
 CREATE INDEX customer_idx1 ON customer (FullName);
@@ -165,6 +170,8 @@ CREATE INDEX IX_Customer_Name ON customer (FullName);
 CREATE INDEX IX_Relationship7 ON customer (pricelevel_ListID);
 
 CREATE INDEX IX_CUSTOMER_SYNC ON customer (needSync);
+
+CREATE INDEX IX_Relationship12 ON customer (vendor_ListID);
 
 -- Table invoice
 
@@ -275,5 +282,22 @@ CREATE TABLE customer_msg
   FullName TEXT,
   CONSTRAINT Key11 PRIMARY KEY (ListID)
 );
+
+-- Table Vendor
+
+CREATE TABLE Vendor
+(
+  ListID TEXT NOT NULL,
+  name TEXT,
+  addr1 TEXT,
+  addr2 TEXT,
+  addr3 TEXT,
+  city TEXT,
+  state TEXT,
+  country TEXT,
+  CONSTRAINT Key12 PRIMARY KEY (ListID)
+);
+
+CREATE INDEX IX_VENDOR_NAME ON Vendor (name);
 
 

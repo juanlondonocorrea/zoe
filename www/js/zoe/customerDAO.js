@@ -4,6 +4,7 @@ var customerDAO = {list:listCustomers,
 		listByRouteDay:listCustomersByRouteDay,
 		getById:getCustomerById, 
 		store:storeCustomer, 
+		updateVendor:updateCustomerVendor, 
 		deleteAll:deleteAllCustomer, 
 		markToSync:markToSyncCustomer, 
 		markSynchronized:doMarkSynchorinizedCustomer};
@@ -53,6 +54,15 @@ function storeCustomer(records,aErrFunc,successCB,origin){
 	db.transaction(doStoreCustomer, errorCB, successCB);
 }
 
+function updateCustomerVendor(listID, vendor_ListID,aErrFunc,successCB){
+	db = openDatabaseZoe();
+	logZoe("storeCustomer db=" + db);
+	recordCustomer = records;
+	customerErrFunc = aErrFunc;
+	filterDataCustomer = ListID;
+	db.transaction(doStoreCustomerVendor, errorCB, successCB);
+}
+
 function deleteAllCustomer(aErrFunc,successCB){
 	db = openDatabaseZoe();
 	logZoe("deleteAllCustomer db=" + db);
@@ -83,17 +93,17 @@ function markSynchronizedCustomer(ListID,aErrFunc,successCB){
 
 function doSelectCustomer(tx){
 	logZoe("doSelectCustomer filterData=" + filterDataCustomer);
-	tx.executeSql("SELECT ListID, FullName, IsActive, billAddress1, billAddress2, shipAddress1, shipAddress2, openBalance, overdueBalance, workPhone, cellPhone, email, shipAddressZipcode, billAddresZipcode, billAddresCity, billAddressState, billAddressCountry, shipAddressCity, shipAddressState, shipAddressCountry, id_salesrep, routeDay1, routeDay2, routeDay3, routeDay4, routeDay5, routeDay6, routeDay7, Fax, billAddress3, shipAddress3, name, companyName, otherDetails, id_term, pricelevel_ListID FROM customer Where ListId=?", [filterDataCustomer],customerLocalReceiveFunction, customerErrFunc);
+	tx.executeSql("SELECT ListID, FullName, IsActive, billAddress1, billAddress2, shipAddress1, shipAddress2, openBalance, overdueBalance, workPhone, cellPhone, email, shipAddressZipcode, billAddresZipcode, billAddresCity, billAddressState, billAddressCountry, shipAddressCity, shipAddressState, shipAddressCountry, id_salesrep, routeDay1, routeDay2, routeDay3, routeDay4, routeDay5, routeDay6, routeDay7, Fax, billAddress3, shipAddress3, name, companyName, otherDetails, id_term, pricelevel_ListID, vendor_ListID FROM customer Where ListId=?", [filterDataCustomer],customerLocalReceiveFunction, customerErrFunc);
 }
 
 function doSelectAllCustomer(tx){
 	logZoe("doSelectAllCustomer")
-	tx.executeSql("SELECT ListID, FullName, IsActive, billAddress1, billAddress2, shipAddress1, shipAddress2, openBalance, overdueBalance, workPhone, cellPhone, email, shipAddressZipcode, billAddresZipcode, billAddresCity, billAddressState, billAddressCountry, shipAddressCity, shipAddressState, shipAddressCountry, id_salesrep, routeDay1, routeDay2, routeDay3, routeDay4, routeDay5, routeDay6, routeDay7, Fax, billAddress3, shipAddress3, name, companyName, otherDetails, id_term, pricelevel_ListID FROM customer ORDER BY FullName", [],customerLocalListReceiveFunction, customerErrFunc);
+	tx.executeSql("SELECT ListID, FullName, IsActive, billAddress1, billAddress2, shipAddress1, shipAddress2, openBalance, overdueBalance, workPhone, cellPhone, email, shipAddressZipcode, billAddresZipcode, billAddresCity, billAddressState, billAddressCountry, shipAddressCity, shipAddressState, shipAddressCountry, id_salesrep, routeDay1, routeDay2, routeDay3, routeDay4, routeDay5, routeDay6, routeDay7, Fax, billAddress3, shipAddress3, name, companyName, otherDetails, id_term, pricelevel_ListID, vendor_ListID FROM customer ORDER BY FullName", [],customerLocalListReceiveFunction, customerErrFunc);
 }
 
 function doListCustomersByRouteDay(tx){
 	logZoe("doListCustomersByRouteDay")
-	var query = "SELECT customer.ListID, FullName, IsActive, billAddress1, billAddress2, shipAddress1, shipAddress2, openBalance, overdueBalance, workPhone, cellPhone, email, shipAddressZipcode, billAddresZipcode, billAddresCity, billAddressState, billAddressCountry, shipAddressCity, shipAddressState, shipAddressCountry, id_salesrep, routeDay1, routeDay2, routeDay3, routeDay4, routeDay5, routeDay6, routeDay7, Fax, billAddress3, shipAddress3, name, companyName, otherDetails, customer.id_term, pricelevel_ListID ,ifnull(inv.salesofday,0) as salesofday FROM customer left join (select listid, sum(subtotal+salestaxtotal) salesofday FROM invoice where shipdate=date('now','localtime') group by listid) as inv on inv.listid= customer.listid"
+	var query = "SELECT customer.ListID, FullName, IsActive, billAddress1, billAddress2, shipAddress1, shipAddress2, openBalance, overdueBalance, workPhone, cellPhone, email, shipAddressZipcode, billAddresZipcode, billAddresCity, billAddressState, billAddressCountry, shipAddressCity, shipAddressState, shipAddressCountry, id_salesrep, routeDay1, routeDay2, routeDay3, routeDay4, routeDay5, routeDay6, routeDay7, Fax, billAddress3, shipAddress3, name, companyName, otherDetails, customer.id_term, pricelevel_ListID ,ifnull(inv.salesofday,0) as salesofday, vendor_ListID FROM customer left join (select listid, sum(subtotal+salestaxtotal) salesofday FROM invoice where shipdate=date('now','localtime') group by listid) as inv on inv.listid= customer.listid"
 	+" WHERE customer.routeday" + filterDataCustomer + "=1" ;
 	console.log("doListCustomersByRouteDay query=" + query);
 	tx.executeSql(query,[],customerLocalListReceiveFunction, customerErrFunc);
@@ -142,7 +152,8 @@ function doStoreCustomer(tx){
 }
 
 function doStoreOneCustomer(tx, theRecord){
-	tx.executeSql('INSERT OR REPLACE INTO customer(ListID, FullName, IsActive, billAddress1, billAddress2, shipAddress1, shipAddress2, openBalance, overdueBalance, workPhone, cellPhone, email, shipAddressZipcode, billAddresZipcode, billAddresCity, billAddressState, billAddressCountry, shipAddressCity, shipAddressState, shipAddressCountry, id_salesrep, routeDay1, routeDay2, routeDay3, routeDay4, routeDay5, routeDay6, routeDay7, Fax, billAddress3, shipAddress3, name, companyName, otherDetails, id_term, pricelevel_ListID) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[theRecord.ListID, ifUndefNull(theRecord.FullName), theRecord.IsActive, ifUndefNull(theRecord.billAddress1), ifUndefNull(theRecord.billAddress2), ifUndefNull(theRecord.shipAddress1), ifUndefNull(theRecord.shipAddress2), ifUndefNull(theRecord.openBalance), ifUndefNull(theRecord.overdueBalance), ifUndefNull(theRecord.workPhone), ifUndefNull(theRecord.cellPhone), ifUndefNull(theRecord.email), ifUndefNull(theRecord.shipAddressZipcode), ifUndefNull(theRecord.billAddresZipcode), ifUndefNull(theRecord.billAddresCity), ifUndefNull(theRecord.billAddressState), ifUndefNull(theRecord.billAddressCountry), ifUndefNull(theRecord.shipAddressCity), ifUndefNull(theRecord.shipAddressState), ifUndefNull(theRecord.shipAddressCountry), ifUndefNull(theRecord.id_salesrep), ifUndefNull(theRecord.routeDay1), ifUndefNull(theRecord.routeDay2), ifUndefNull(theRecord.routeDay3), ifUndefNull(theRecord.routeDay4), ifUndefNull(theRecord.routeDay5), ifUndefNull(theRecord.routeDay6), ifUndefNull(theRecord.routeDay7), ifUndefNull(theRecord.Fax), ifUndefNull(theRecord.billAddress3), ifUndefNull(theRecord.shipAddress3), ifUndefNull(theRecord.name), ifUndefNull(theRecord.companyName), ifUndefNull(theRecord.otherDetails), ifUndefNull(theRecord.id_term), theRecord.pricelevel_ListID]);
+	tx.executeSql('INSERT OR REPLACE INTO customer(ListID, FullName, IsActive, billAddress1, billAddress2, shipAddress1, shipAddress2, openBalance, overdueBalance, workPhone, cellPhone, email, shipAddressZipcode, billAddresZipcode, billAddresCity, billAddressState, billAddressCountry, shipAddressCity, shipAddressState, shipAddressCountry, id_salesrep, routeDay1, routeDay2, routeDay3, routeDay4, routeDay5, routeDay6, routeDay7, Fax, billAddress3, shipAddress3, name, companyName, otherDetails, id_term, pricelevel_ListID, vendor_ListID) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[theRecord.ListID, ifUndefNull(theRecord.FullName), theRecord.IsActive, ifUndefNull(theRecord.billAddress1), ifUndefNull(theRecord.billAddress2), ifUndefNull(theRecord.shipAddress1), ifUndefNull(theRecord.shipAddress2), ifUndefNull(theRecord.openBalance), ifUndefNull(theRecord.overdueBalance), ifUndefNull(theRecord.workPhone), ifUndefNull(theRecord.cellPhone), ifUndefNull(theRecord.email), ifUndefNull(theRecord.shipAddressZipcode), ifUndefNull(theRecord.billAddresZipcode), ifUndefNull(theRecord.billAddresCity), ifUndefNull(theRecord.billAddressState), ifUndefNull(theRecord.billAddressCountry), ifUndefNull(theRecord.shipAddressCity), ifUndefNull(theRecord.shipAddressState), ifUndefNull(theRecord.shipAddressCountry), ifUndefNull(theRecord.id_salesrep), ifUndefNull(theRecord.routeDay1), ifUndefNull(theRecord.routeDay2), ifUndefNull(theRecord.routeDay3), ifUndefNull(theRecord.routeDay4), ifUndefNull(theRecord.routeDay5), ifUndefNull(theRecord.routeDay6), ifUndefNull(theRecord.routeDay7), ifUndefNull(theRecord.Fax), ifUndefNull(theRecord.billAddress3), ifUndefNull(theRecord.shipAddress3), ifUndefNull(theRecord.name), ifUndefNull(theRecord.companyName), ifUndefNull(theRecord.otherDetails), ifUndefNull(theRecord.id_term), 
+	theRecord.pricelevel_ListID, ifUndefNull(theRecord.vendor_ListID)]);
 	if (customerOrigin){
 		tx.executeSql('UPDATE customer set origin = ? WHERE ListID = ?',[customerOrigin, theRecord.ListID]);
 	}
@@ -158,4 +169,8 @@ function doMarkSynchorinizedCustomer(tx){
 
 function doDeleteAllCustomer(tx){
 	tx.executeSql('DELETE FROM customer',[]);
+}
+
+function doStoreCustomerVendor(tx){
+	tx.executeSql("UPDATE customer SET vendor_ListID=? where vendor_ListID = ?",[recordCustomer, filterDataCustomer]);
 }
