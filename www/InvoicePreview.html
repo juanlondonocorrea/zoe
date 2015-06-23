@@ -32,7 +32,8 @@
 			});
 			
 			function initThisPage(event){ 
-				invoiceDAO.getById(aId,true,receiveInvoiceDetails,errReceiveInvoiceDetails);
+				invoiceDAO.getById('789D9-1430760041',true,receiveInvoiceDetails,errReceiveInvoiceDetails);
+			//receiveInvoiceDetails();
 			}
 
 			// BEGIN Functions on error case
@@ -52,10 +53,45 @@
 				// shipDate, subtotal, id_term, id_salesrep, customerMsg_ListID 
 				
 				// term_name	customer_msg_FullName
-				/*$('#date').val(arrayInvoicesDetails[0].shipDate);
-				$('#invoiceNum')(arrayInvoicesDetails[0].refNumber);
-*/
-			}
+				// 
+				// 
+			//	var arrayInvoicesDetails = new Array();
+			//	arrayInvoicesDetails[0] = {refNumber:'987654',shipDate:'2015-06-23', openBalance:'1000.00'};
+				
+				logZoe("arrayInvoicesDetails: ============> "+arrayInvoicesDetails[0]);
+				
+				$('#refNumber').val(arrayInvoicesDetails[0].refNumber);
+			/*	$('#id_invoice').val(arrayInvoicesDetails[0].id_invoice);
+				$('#ListID').val(arrayInvoicesDetails[0].ListID);
+				$('#po_number').val(arrayInvoicesDetails[0].po_number);
+			*/	$('#shipDate').val(arrayInvoicesDetails[0].shipDate);
+			/*	$('#dueDate').val(arrayInvoicesDetails[0].dueDate);
+				$('#appliedAmount').val(arrayInvoicesDetails[0].appliedAmount);
+				$('#balanceRemaining').val(arrayInvoicesDetails[0].balanceRemaining);
+				
+				$('#billAddress_addr1').val(arrayInvoicesDetails[0].billAddress_addr1);
+				$('#billAddress_addr2').val(arrayInvoicesDetails[0].billAddress_addr2);
+				$('#billAddress_addr3').val(arrayInvoicesDetails[0].billAddress_addr3);
+				$('#billAddress_city').val(arrayInvoicesDetails[0].billAddress_city);
+				$('#billAddress_state').val(arrayInvoicesDetails[0].billAddress_state);
+				$('#billAddress_postalcode').val(arrayInvoicesDetails[0].billAddress_postalcode);
+				
+				$('#shipAddress_addr1').val(arrayInvoicesDetails[0].shipAddress_addr1);
+				$('#shipAddress_addr2').val(arrayInvoicesDetails[0].shipAddress_addr2);
+				$('#shipAddress_addr3').val(arrayInvoicesDetails[0].shipAddress_addr3);
+				$('#shipAddress_city').val(arrayInvoicesDetails[0].shipAddress_city);
+				$('#shipAddress_state').val(arrayInvoicesDetails[0].shipAddress_state);
+				$('#shipAddress_postalcode').val(arrayInvoicesDetails[0].shipAddress_postalcode);
+				
+				$('#isPaid').val(arrayInvoicesDetails[0].isPaid);
+				$('#isPending').val(arrayInvoicesDetails[0].isPending);
+				$('#salesTaxPercentage').val(arrayInvoicesDetails[0].salesTaxPercentage);
+				$('#salesTaxTotal').val(arrayInvoicesDetails[0].salesTaxTotal);
+				$('#subtotal').val(arrayInvoicesDetails[0].subtotal);
+				$('#term_name').val(arrayInvoicesDetails[0].term_name);
+				$('#id_salesrep').val(arrayInvoicesDetails[0].id_salesrep);
+				$('#customer_msg_FullName').val(arrayInvoicesDetails[0].customer_msg_FullName);
+		*/	}
 			
 		</script>
 		<style type="text/css">
@@ -72,7 +108,7 @@
 			border-collapse: collapse;
 			border-spacing: 0px;
 			padding: 0px;
-			width:98%;  }
+			width:99%;  }
 
 			th, td { vertical-align: top; }
 			
@@ -86,29 +122,31 @@
                 <table id="meta">
                   <tbody>
                     <tr>
-                      <td>&nbsp;</td>
+                      <td><h1>Invoice</h1></td>
                       <td>&nbsp;</td>
                       <td>&nbsp;</td>
                       <td>&nbsp;</td>
                       <td>&nbsp;</td>
                     </tr>
                     <tr>
-                      <td><h1>Invoice</h1></td>
+                      <td>
+                          <table width="98%" border="1" cellspacing="0" cellpadding="0">
+                            <tbody>
+                              <tr>
+                                <td class="TinyFont">DATE <br>
+                                    <input class="SmallFont" type="text" name="shipDate" id="shipDate" value=""  />
+                                </td>
+                              </tr>
+                              <tr>
+                                <td class="TinyFont">INVOICE # <br>
+                                    <input class="SmallFont" type="text" name="refNumber" id="refNumber" value=""  />
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                      </td>
                       <td>&nbsp;</td>
-                      <td><table width="98%" border="0" cellspacing="0" cellpadding="0">
-                        <tbody>
-                          <tr>
-                            <td class="TinyFont">DATE <br>
-                            	<input class="SmallFont" type="text" name="date" id="date" value="December 15, 2009"  />
-                            </td>
-                          </tr>
-                          <tr>
-                            <td class="TinyFont">INVOICE # <br>
-                                <input class="SmallFont" type="text" name="invoiceNum" id="invoiceNum" value=""  />
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table></td>
+                      <td></td>
                       <td class="TinyFont">BILL TO<br>
                       	<label id="billto1" class="SmallFont">December 15, 2009</label>
                         <input  class="SmallFont" type="text" name="billto1" id="billto1" value="December 15, 2009"  />
