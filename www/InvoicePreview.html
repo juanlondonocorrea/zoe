@@ -32,7 +32,7 @@
 			});
 			
 			function initThisPage(event){ 
-				invoiceDAO.getById('789D9-1430760041',true,receiveInvoiceDetails);
+				invoiceDAO.getById('789D9-1430760041',true,receiveInvoiceDetails,errReceiveInvoiceDetails);
 			//receiveInvoiceDetails();
 			}
 
@@ -92,7 +92,7 @@
 				$('#id_salesrep').val(InvoiceVO.id_salesrep);
 				$('#customer_msg_FullName').val(InvoiceVO.customer_msg_FullName);
 		*/		}
-			}
+			} 
 			
 		</script>
 		<style type="text/css">
