@@ -42,8 +42,8 @@
 			}
 			// END functions on error case
 
-			function receiveInvoiceDetails(arrayInvoicesDetails){
-
+			function receiveInvoiceDetails(InvoiceVO){
+				if (InvoiceVO) {
 				// id_invoice, ListID, po_number, dueDate, appliedAmount, balanceRemaining, 
 				// billAddress_addr1, billAddress_addr2, billAddress_addr3, 
 				// billAddress_city, billAddress_state, billAddress_postalcode, 
@@ -55,43 +55,44 @@
 				// term_name	customer_msg_FullName
 				// 
 				// 
-			//	var arrayInvoicesDetails = new Array();
-			//	arrayInvoicesDetails[0] = {refNumber:'987654',shipDate:'2015-06-23', openBalance:'1000.00'};
+			//	var InvoiceVO = new Array();
+			//	InvoiceVO = {refNumber:'987654',shipDate:'2015-06-23', openBalance:'1000.00'};
 				
-				logZoe("arrayInvoicesDetails: ============> "+arrayInvoicesDetails[0]);
+				logZoe("InvoiceVO: ============> "+InvoiceVO);
 				
-				$('#refNumber').val(arrayInvoicesDetails[0].refNumber);
-			/*	$('#id_invoice').val(arrayInvoicesDetails[0].id_invoice);
-				$('#ListID').val(arrayInvoicesDetails[0].ListID);
-				$('#po_number').val(arrayInvoicesDetails[0].po_number);
-			*/	$('#shipDate').val(arrayInvoicesDetails[0].shipDate);
-			/*	$('#dueDate').val(arrayInvoicesDetails[0].dueDate);
-				$('#appliedAmount').val(arrayInvoicesDetails[0].appliedAmount);
-				$('#balanceRemaining').val(arrayInvoicesDetails[0].balanceRemaining);
+				$('#refNumber').val(InvoiceVO.refNumber);
+			/*	$('#id_invoice').val(InvoiceVO.id_invoice);
+				$('#ListID').val(InvoiceVO.ListID);
+				$('#po_number').val(InvoiceVO.po_number);
+			*/	$('#shipDate').val(InvoiceVO.shipDate);
+			/*	$('#dueDate').val(InvoiceVO.dueDate);
+				$('#appliedAmount').val(InvoiceVO.appliedAmount);
+				$('#balanceRemaining').val(InvoiceVO.balanceRemaining);
 				
-				$('#billAddress_addr1').val(arrayInvoicesDetails[0].billAddress_addr1);
-				$('#billAddress_addr2').val(arrayInvoicesDetails[0].billAddress_addr2);
-				$('#billAddress_addr3').val(arrayInvoicesDetails[0].billAddress_addr3);
-				$('#billAddress_city').val(arrayInvoicesDetails[0].billAddress_city);
-				$('#billAddress_state').val(arrayInvoicesDetails[0].billAddress_state);
-				$('#billAddress_postalcode').val(arrayInvoicesDetails[0].billAddress_postalcode);
+				$('#billAddress_addr1').val(InvoiceVO.billAddress_addr1);
+				$('#billAddress_addr2').val(InvoiceVO.billAddress_addr2);
+				$('#billAddress_addr3').val(InvoiceVO.billAddress_addr3);
+				$('#billAddress_city').val(InvoiceVO.billAddress_city);
+				$('#billAddress_state').val(InvoiceVO.billAddress_state);
+				$('#billAddress_postalcode').val(InvoiceVO.billAddress_postalcode);
 				
-				$('#shipAddress_addr1').val(arrayInvoicesDetails[0].shipAddress_addr1);
-				$('#shipAddress_addr2').val(arrayInvoicesDetails[0].shipAddress_addr2);
-				$('#shipAddress_addr3').val(arrayInvoicesDetails[0].shipAddress_addr3);
-				$('#shipAddress_city').val(arrayInvoicesDetails[0].shipAddress_city);
-				$('#shipAddress_state').val(arrayInvoicesDetails[0].shipAddress_state);
-				$('#shipAddress_postalcode').val(arrayInvoicesDetails[0].shipAddress_postalcode);
+				$('#shipAddress_addr1').val(InvoiceVO.shipAddress_addr1);
+				$('#shipAddress_addr2').val(InvoiceVO.shipAddress_addr2);
+				$('#shipAddress_addr3').val(InvoiceVO.shipAddress_addr3);
+				$('#shipAddress_city').val(InvoiceVO.shipAddress_city);
+				$('#shipAddress_state').val(InvoiceVO.shipAddress_state);
+				$('#shipAddress_postalcode').val(InvoiceVO.shipAddress_postalcode);
 				
-				$('#isPaid').val(arrayInvoicesDetails[0].isPaid);
-				$('#isPending').val(arrayInvoicesDetails[0].isPending);
-				$('#salesTaxPercentage').val(arrayInvoicesDetails[0].salesTaxPercentage);
-				$('#salesTaxTotal').val(arrayInvoicesDetails[0].salesTaxTotal);
-				$('#subtotal').val(arrayInvoicesDetails[0].subtotal);
-				$('#term_name').val(arrayInvoicesDetails[0].term_name);
-				$('#id_salesrep').val(arrayInvoicesDetails[0].id_salesrep);
-				$('#customer_msg_FullName').val(arrayInvoicesDetails[0].customer_msg_FullName);
-		*/	}
+				$('#isPaid').val(InvoiceVO.isPaid);
+				$('#isPending').val(InvoiceVO.isPending);
+				$('#salesTaxPercentage').val(InvoiceVO.salesTaxPercentage);
+				$('#salesTaxTotal').val(InvoiceVO.salesTaxTotal);
+				$('#subtotal').val(InvoiceVO.subtotal);
+				$('#term_name').val(InvoiceVO.term_name);
+				$('#id_salesrep').val(InvoiceVO.id_salesrep);
+				$('#customer_msg_FullName').val(InvoiceVO.customer_msg_FullName);
+		*/		}
+			}
 			
 		</script>
 		<style type="text/css">
@@ -108,18 +109,21 @@
 			border-collapse: collapse;
 			border-spacing: 0px;
 			padding: 0px;
-			width:99%;  }
+			width:400px;  }
 
 			th, td { vertical-align: top; }
 			
-			table { margin: 0 auto; border:none; }						
+			table { margin: 0 auto; border:none; }
+			.tblCabecera {
+				width:400px;
+			}
 		</style> 
 	</head> 
 
 	<body>
 		<div data-role="page" id="InvoicePreview" data-theme="a">
 			<div data-role="content" >
-                <table id="meta">
+                <table id="tblCabecera">
                   <tbody>
                     <tr>
                       <td><h1>Invoice</h1></td>
@@ -148,20 +152,19 @@
                       <td>&nbsp;</td>
                       <td></td>
                       <td class="TinyFont">BILL TO<br>
-                      	<label id="billto1" class="SmallFont">December 15, 2009</label>
-                        <input  class="SmallFont" type="text" name="billto1" id="billto1" value="December 15, 2009"  />
+                        <textarea id="billAddress_addr1" class="SmallFont">December 15, 2009 December 15, 2009 December 15, 2009</textarea>
                         <br>
-<input  class="SmallFont" type="text" name="billto2" id="billto2" value="December 15, 2009"  />
-<br>
-<input  class="SmallFont" type="text" name="billto3" id="billto3" value="December 15, 2009"  />
+						<textarea id="billAddress_addr2" class="SmallFont">December 15, 2009 December 15, 2009 December 15, 2009</textarea>
+						<br>
+						<textarea id="billAddress_addr3" class="SmallFont">December 15, 2009 December 15, 2009 December 15, 2009</textarea>
                       </td>
                       <td class="TinyFont">SHIP TO
                         <br>
-                        <input  class="SmallFont" type="text" name="shipto1" id="shipto1" value="December 15, 2009"  />
-                      <br>
-<input  class="SmallFont" type="text" name="shipto2" id="shipto2" value="December 15, 2009"  />
-<br>
-<input  class="SmallFont" type="text" name="shipto3" id="shipto3" value="December 15, 2009"  />
+                        <textarea id="shipAddress_addr1" class="SmallFont">December 15, 2009 December 15, 2009 December 15, 2009</textarea>
+                      	<br>
+						<textarea id="shipAddress_addr1" class="SmallFont">December 15, 2009 December 15, 2009 December 15, 2009</textarea>
+                      	<br>
+	                    <textarea id="shipAddress_addr1" class="SmallFont">December 15, 2009 December 15, 2009 December 15, 2009</textarea>
                       </td>
                     </tr>
                     <tr>
