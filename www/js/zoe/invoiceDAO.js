@@ -143,38 +143,50 @@ function doCustomerInvoices(tx){
 }
 
 function invoiceLocalReceiveFunction(tx,results){
-	logZoe("invoiceLocalReceiveFunction includeInvoiceDetails=" + includeInvoiceDetails);
-	logZoe("invoiceLocalReceiveFunction results.rows=" + results.rows);
-	logZoe("invoiceLocalReceiveFunction results.rows.length=" + results.rows.length);
+	console.log("invoiceLocalReceiveFunction includeInvoiceDetails=" + includeInvoiceDetails);
+	console.log("invoiceLocalReceiveFunction results.rows=" + results.rows);
+	console.log("invoiceLocalReceiveFunction results.rows.length=" + results.rows.length);
 	if (results.rows.length>0){
-	logZoe("localReceiveFunction1 " + JSON.stringify(results.rows.item(0)));
+	console.log("localReceiveFunction1 " + JSON.stringify(results.rows.item(0)));
 		invoiceVO=results.rows.item(0);
 			if (includeInvoiceDetails){
-					tx.executeSql("SELECT LineID, id_invoice, Inventory_ListID, Desc, Quantity, Rate, Amount, SalesTax_ListID, salesTax.Name salesTax_Name FROM invoice_item " +
-					" LEFT JOIN  salesTax ON salesTax.ListID = invoice_item.SalesTax_ListID " +
-					" Where id_invoice = ?", [filterDataInvoice],invoiceItemsLocalReceiveFunction, invoiceErrFunc);
-		
+				console.log("se buscaran los detalles ");
+					tx.executeSql("SELECT LineID, id_invoice, Inventory_ListID, invoice_item.Desc, " +
+					" Quantity, Rate, Amount, SalesTax_ListID, salesTax.Name as salesTax_Name"+
+					" FROM invoice_item " +
+					" LEFT JOIN salesTax ON salesTax.ListID = invoice_item.SalesTax_ListID " +
+					" Where id_invoice = ?", [filterDataInvoice],invoiceItemsLocalReceiveFunction, invoiceLocalErrFunc);
+				console.log("se ejecuta transacción");
 			}else{
+				console.log("se va por else");
 				invoiceReceiveFunction(invoiceVO);
 			}
 	}
 	logZoe("localReceiveFunction fin");
 }
 
+function invoiceLocalErrFunc(tx, err){
+	console.log("error: " + err);
+	console.log("json error: " + JSON.stringify(err));
+	invoiceErrFunc(err);
+}
+
 function invoiceItemsLocalReceiveFunction(tx,results){
-	logZoe("invoiceItemsLocalReceiveFunction results = " + results);
+	console.log("invoiceItemsLocalReceiveFunction 1");
+	console.log("invoiceItemsLocalReceiveFunction results = " + results);
+	console.log("invoiceItemsLocalReceiveFunction results.rows" + results.rows);
 	if (results && results.rows){
-		logZoe("invoiceItemsLocalReceiveFunction results.rows.length = " + results.rows.length);
+		console.log("invoiceItemsLocalReceiveFunction results.rows.length = " + results.rows.length);
 	}
 	if (results && results.rows && results.rows.length>0){
 		invoiceVO.items=new Array();
 		var i;
 		for (i = 0; i<results.rows.length; i++){
-			logZoe("invoiceItemsLocalReceiveFunction lastItem=" + results.rows.item(i));
+			console.log("invoiceItemsLocalReceiveFunction lastItem=" + results.rows.item(i));
 			invoiceVO.items[i] = results.rows.item(i);
 		}
 	}
-	logZoe("invoiceItemsLocalReceiveFunction fin invoiceVO=" +  JSON.stringify(invoiceVO));
+	console.log("invoiceItemsLocalReceiveFunction fin invoiceVO=" +  JSON.stringify(invoiceVO));
 	invoiceReceiveFunction(invoiceVO);
 }
 
