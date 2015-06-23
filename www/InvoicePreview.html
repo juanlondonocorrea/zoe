@@ -1,0 +1,245 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Customers</title>
+
+		<link rel="stylesheet" href="css/themes/zoe.min.css" />
+		<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
+		<link rel="stylesheet" href="js/jquery-mobile/jquery.mobile.structure-1.4.5.min.css" />
+		<link rel="stylesheet" href="js/jqm-inlinetabs/jqm-inlinetabs.min.css" />
+
+		<!--  <link rel="stylesheet" href="js/jquery-mobile/jquery.mobile-1.4.5.min.css" />  -->
+		<script src="js/jquery-mobile/jquery-2.1.4.js"></script>
+		<script src="js/jquery-mobile/jquery.mobile-1.4.5.min.js"></script>
+		<script type="text/javascript" src="cordova.js"></script>
+		<script src="js/jqm-inlinetabs/jqm-inlinetabs.min.js"></script>        
+		<script src="js/zoe/zoe.js"></script>
+		<script src="js/zoe/customerDAO.js"></script>
+        <script src="js/zoe/termDAO.js"></script>
+        <script src="js/zoe/pricelevelDAO.js"></script>
+        <script src="js/zoe/invoiceDAO.js"></script>
+		<script src="js/zoe/salesRepDAO.js"></script>
+		<script src="js/zoe/invoiceDAO.js"></script>
+		<script src="js/zoe/inventoryDAO.js"></script>
+		<script src="js/zoe/taxDAO.js"></script>
+		<script src="js/zoe/customerMsgDAO.js"></script>
+
+		<script>
+			$(document).bind("pagebeforecreate", function(event) {
+				initAnyPage(event.target);
+				initThisPage(event);
+			});
+			
+			function initThisPage(event){ 
+				invoiceDAO.getById(aId,true,receiveInvoiceDetails,errReceiveInvoiceDetails);
+			}
+
+			// BEGIN Functions on error case
+			function errReceiveInvoiceDetails(err){
+				alert("DB Error Invoice Details: "+JSON.stringify(err));
+			}
+			// END functions on error case
+
+			function receiveInvoiceDetails(arrayInvoicesDetails){
+
+				// id_invoice, ListID, po_number, dueDate, appliedAmount, balanceRemaining, 
+				// billAddress_addr1, billAddress_addr2, billAddress_addr3, 
+				// billAddress_city, billAddress_state, billAddress_postalcode, 
+				// shipAddress_addr1, shipAddress_addr2, shipAddress_addr3, 
+				// shipAddress_city, shipAddress_state, shipAddress_postalcode, 
+				// isPaid, isPending, refNumber, salesTaxPercentage, salesTaxTotal, 
+				// shipDate, subtotal, id_term, id_salesrep, customerMsg_ListID 
+				
+				// term_name	customer_msg_FullName
+				/*$('#date').val(arrayInvoicesDetails[0].shipDate);
+				$('#invoiceNum')(arrayInvoicesDetails[0].refNumber);
+*/
+			}
+			
+		</script>
+		<style type="text/css">
+			.BigFont {color:black; font-weight:bolder; font-size:large;}
+			.MediumFont {color:black; font-weight:bolder; font-size:medium;}
+			.SmallFont {color:black; font-weight:bolder; font-size:small;}
+			.SmallerFont {color:black; font-weight:bolder; font-size:smaller;}
+			.TinyFont {color:black; font-weight:bolder; font-size:x-small;}
+			
+			th, td { padding: 0px; }
+			
+			table { border-collapse: separate; }
+			table { 
+			border-collapse: collapse;
+			border-spacing: 0px;
+			padding: 0px;
+			width:98%;  }
+
+			th, td { vertical-align: top; }
+			
+			table { margin: 0 auto; border:none; }						
+		</style> 
+	</head> 
+
+	<body>
+		<div data-role="page" id="InvoicePreview" data-theme="a">
+			<div data-role="content" >
+                <table id="meta">
+                  <tbody>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td><h1>Invoice</h1></td>
+                      <td>&nbsp;</td>
+                      <td><table width="98%" border="0" cellspacing="0" cellpadding="0">
+                        <tbody>
+                          <tr>
+                            <td class="TinyFont">DATE <br>
+                            	<input class="SmallFont" type="text" name="date" id="date" value="December 15, 2009"  />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td class="TinyFont">INVOICE # <br>
+                                <input class="SmallFont" type="text" name="invoiceNum" id="invoiceNum" value=""  />
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table></td>
+                      <td class="TinyFont">BILL TO<br>
+                      	<label id="billto1" class="SmallFont">December 15, 2009</label>
+                        <input  class="SmallFont" type="text" name="billto1" id="billto1" value="December 15, 2009"  />
+                        <br>
+<input  class="SmallFont" type="text" name="billto2" id="billto2" value="December 15, 2009"  />
+<br>
+<input  class="SmallFont" type="text" name="billto3" id="billto3" value="December 15, 2009"  />
+                      </td>
+                      <td class="TinyFont">SHIP TO
+                        <br>
+                        <input  class="SmallFont" type="text" name="shipto1" id="shipto1" value="December 15, 2009"  />
+                      <br>
+<input  class="SmallFont" type="text" name="shipto2" id="shipto2" value="December 15, 2009"  />
+<br>
+<input  class="SmallFont" type="text" name="shipto3" id="shipto3" value="December 15, 2009"  />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td><textarea name="textarea">000123</textarea></td>
+                      <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                      <td>&nbsp;</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <textarea id="address">Chris Coyier
+            123 Appleseed Street
+            Appleville, WI 53719
+            
+            Phone: (555) 555-5555</textarea>
+
+                    <div id="identity">
+<div id="logo">
+                        
+        <div id="logoctr">
+                            <a href="javascript:;" id="change-logo" title="Change logo">Change Logo</a>
+                            <a href="javascript:;" id="save-logo" title="Save changes">Save</a>
+                            |
+                            <a href="javascript:;" id="delete-logo" title="Delete logo">Delete Logo</a>
+                            <a href="javascript:;" id="cancel-logo" title="Cancel changes">Cancel</a>
+                          </div>
+            
+                          <div id="logohelp">
+                            <input id="imageloc" type="text" size="50" value="" /><br />
+                            (max width: 540px, max height: 100px)
+                          </div>
+                          <img id="image" src="images/logo.png" alt="logo" />
+                        </div>
+                    </div>
+                    
+					<div style="clear:both"></div>
+                    <div id="customer">
+                        <textarea id="customer-title">Widget Corp.
+            c/o Steve Widget</textarea>
+                        <table>
+                            <tr>
+                                <td class="meta-head">Amount Due</td>
+                                <td><div class="due">$875.00</div></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <table id="items">
+                    
+                      <tr>
+                          <th>Item</th>
+                          <th>Description</th>
+                          <th>Unit Cost</th>
+                          <th>Quantity</th>
+                          <th>Price</th>
+                      </tr>
+                      
+                      <tr class="item-row">
+                          <td class="item-name"><div class="delete-wpr"><textarea>Web Updates</textarea><a class="delete" href="javascript:;" title="Remove row">X</a></div></td>
+                          <td class="description"><textarea>Monthly web updates for http://widgetcorp.com (Nov. 1 - Nov. 30, 2009)</textarea></td>
+                          <td><textarea class="cost">$650.00</textarea></td>
+                          <td><textarea class="qty">1</textarea></td>
+                          <td><span class="price">$650.00</span></td>
+                      </tr>
+                      
+                      <tr class="item-row">
+                          <td class="item-name"><div class="delete-wpr"><textarea>SSL Renewals</textarea><a class="delete" href="javascript:;" title="Remove row">X</a></div></td>
+            
+                          <td class="description"><textarea>Yearly renewals of SSL certificates on main domain and several subdomains</textarea></td>
+                          <td><textarea class="cost">$75.00</textarea></td>
+                          <td><textarea class="qty">3</textarea></td>
+                          <td><span class="price">$225.00</span></td>
+                      </tr>
+                      
+                      <tr id="hiderow">
+                        <td colspan="5"><a id="addrow" href="javascript:;" title="Add a row">Add a row</a></td>
+                      </tr>
+                      
+                      <tr>
+                          <td colspan="2" class="blank"> </td>
+                          <td colspan="2" class="total-line">Subtotal</td>
+                          <td class="total-value"><div id="subtotal">$875.00</div></td>
+                      </tr>
+                      <tr>
+            
+                          <td colspan="2" class="blank"> </td>
+                          <td colspan="2" class="total-line">Total</td>
+                          <td class="total-value"><div id="total">$875.00</div></td>
+                      </tr>
+                      <tr>
+                          <td colspan="2" class="blank"> </td>
+                          <td colspan="2" class="total-line">Amount Paid</td>
+            
+                          <td class="total-value"><textarea id="paid">$0.00</textarea></td>
+                      </tr>
+                      <tr>
+                          <td colspan="2" class="blank"> </td>
+                          <td colspan="2" class="total-line balance">Balance Due</td>
+                          <td class="total-value balance"><div class="due">$875.00</div></td>
+                      </tr>
+                    
+                    </table>
+
+                <div id="terms">
+                  <h5>Terms</h5>
+                  <textarea>NET 30 Days. Finance Charge of 1.5% will be made on unpaid balances after 30 days.</textarea>
+                </div>                        		
+			</div>
+		</div>				
+	</body>
+</html>			

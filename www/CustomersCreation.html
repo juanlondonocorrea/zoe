@@ -67,7 +67,20 @@
 					$('#shipCountry').val('');
 				}
 			}
-			
+			 
+			function routeDayChecked(rDay){
+				logZoe("rDay: ===1====> "+rDay);
+				rDay = "'#"+rDay+"'";
+				logZoe("rDay: ===2====> "+rDay);
+				if ($(rDay).is(':checked')){
+					$(rDay).val('1');
+				}
+				else {
+					$(rDay).val('0');
+				}
+				logZoe("rDay: ===3====> "+$(rDay).val());
+			}
+
 			var selectedIndex;
 			function receiveTerms(arrayTerms){
 				//$('#Terms').empty();
@@ -146,7 +159,7 @@
 					routeDay6:$('#routeDay6').val(),
 					routeDay7:$('#routeDay7').val(),
 
-					pricelevel_ListID:$('#pricelevel_ListID').val()
+					pricelevel_ListID:$('#priceLevel').val()
 				};
 				logZoe("ListID ========> " +$('#ListID').val());
 				logZoe("FullName ========> " +$('#FullName').val());
@@ -159,7 +172,7 @@
 				logZoe("routeDay5 ========> " +$('#routeDay5').val());
 				logZoe("routeDay6 ========> " +$('#routeDay6').val());
 				logZoe("routeDay7 ========> " +$('#routeDay7').val());
-				logZoe("PriceLevel ========> " +$('#pricelevel_ListID').val());			
+				logZoe("PriceLevel ========> " +$('#priceLevel').val());			
 				logZoe("customerVO ========> " + JSON.stringify(customerVO));
 				customersVO[0] = customerVO;
 				//customerDAO.store(customersVO, errCustomerCreation, successCustomerCreation, "local");
@@ -462,44 +475,44 @@
                                 <div>
                                     <label for="routeDay1">Sunday</label>
                                 </div>
-                                <input  class="myFormsControl"  type="checkbox" data-theme="b" name="routeDay1" id="routeDay1" value=""  />
+                                <input  class="myFormsControl"  type="checkbox" data-theme="b" name="routeDay1" id="routeDay1" value="" onchange="routeDayChecked('routeDay1');"/>
                             </div>
 
                             <div data-role="fieldcontain">
                                 <div>
                                     <label for="routeDay2">Monday</label>
                                 </div>
-                                <input class="myFormsControl"  type="checkbox" data-theme="b" name="routeDay2" id="routeDay2" value=""  />
+                                <input class="myFormsControl"  type="checkbox" data-theme="b" name="routeDay2" id="routeDay2" value=""  onchange="routeDayChecked('routeDay2');"/>
                             </div>                
                             <div data-role="fieldcontain">
                                 <div>
                                     <label for="routeDay3">Tuesday</label>
                                 </div>
-                                <input class="myFormsControl"  type="checkbox" data-theme="b" name="routeDay3" id="routeDay3" value=""  />
+                                <input class="myFormsControl"  type="checkbox" data-theme="b" name="routeDay3" id="routeDay3" value=""  onchange="routeDayChecked('routeDay3');"/>
                             </div>                
                             <div data-role="fieldcontain">
                                 <div>
                                     <label for="routeDay4">Wednesday</label>
                                 </div>
-                                <input  class="myFormsControl" type="checkbox" data-theme="b" name="routeDay4" id="routeDay4" value=""  />
+                                <input  class="myFormsControl" type="checkbox" data-theme="b" name="routeDay4" id="routeDay4" value=""  onchange="routeDayChecked('routeDay4');"/>
                             </div>                
                             <div data-role="fieldcontain">
                                 <div>
                                     <label for="routeDay5">Thursday</label>
                                 </div>
-                                <input  class="myFormsControl" type="checkbox" data-theme="b" name="routeDay5" id="routeDay5" value=""  />
+                                <input  class="myFormsControl" type="checkbox" data-theme="b" name="routeDay5" id="routeDay5" value=""  onchange="routeDayChecked('routeDay5');"/>
                             </div>                
                             <div data-role="fieldcontain">
                                 <div>
                                     <label for="routeDay6">Friday</label>
                                 </div>
-                                <input class="myFormsControl"  type="checkbox" data-theme="b" name="routeDay6" id="routeDay6" value=""  />
+                                <input class="myFormsControl"  type="checkbox" data-theme="b" name="routeDay6" id="routeDay6" value=""  onchange="routeDayChecked('routeDay6');"/>
                             </div>                
                             <div data-role="fieldcontain">
                                 <div>
                                     <label for="routeDay7">Saturday</label>
                                 </div>
-                                <input class="myFormsControl"  type="checkbox" data-theme="b" name="routeDay7" id="routeDay7" value=""  />
+                                <input class="myFormsControl"  type="checkbox" data-theme="b" name="routeDay7" id="routeDay7" value=""  onchange="routeDayChecked('routeDay7');"/>
                             </div> 
 					</fieldset>
 					<!-- Price Level Info -->                       
