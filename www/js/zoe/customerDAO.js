@@ -54,12 +54,11 @@ function storeCustomer(records,aErrFunc,successCB,origin){
 	db.transaction(doStoreCustomer, errorCB, successCB);
 }
 
-function updateCustomerVendor(listID, vendor_ListID,aErrFunc,successCB){
+function updateCustomerVendor(records,aErrFunc,successCB){
 	db = openDatabaseZoe();
 	logZoe("storeCustomer db=" + db);
 	recordCustomer = records;
 	customerErrFunc = aErrFunc;
-	filterDataCustomer = ListID;
 	db.transaction(doStoreCustomerVendor, errorCB, successCB);
 }
 
@@ -172,6 +171,8 @@ function doDeleteAllCustomer(tx){
 }
 
 function doStoreCustomerVendor(tx){
-	console.log("update customer vendor " + recordCustomer + ", " + filterDataCustomer);
-	tx.executeSql("UPDATE customer SET vendor_ListID=? where vendor_ListID = ?",[recordCustomer, filterDataCustomer]);
+	console.log("update customer vendor " + JSON.stringify(recordCustomer));
+	for (var i in recordCustomer){
+		tx.executeSql("UPDATE customer SET vendor_ListID=? where vendor_ListID = ? ",[recordCustomer[i].ListID, recordCustomer[i].name.toUpperCase()]);
+	}
 }

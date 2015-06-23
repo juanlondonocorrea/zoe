@@ -119,7 +119,15 @@ function markSynchronizedCustomer(id_invoice,aErrFunc,successCB){
 
 function doSelectInvoice(tx){
 	logZoe("doSelectInvoice filterData=" + filterDataInvoice);
-	tx.executeSql("SELECT invoice.*, term.name AS term_name, cm.FullName as customer_msg_FullName FROM invoice" +
+	tx.executeSql("SELECT invoice.*, term.name AS term_name, cm.FullName as customer_msg_FullName,  " +
+	" salesrep.Name as salesrep_Name, customer.companyName as customer_companyName,  " +
+	" vendor.Name as vendor_name , vendor.addr1 as vendor_addr1, vendor.addr2 as vendor_addr2," +
+	" vendor.addr3 as vendor_addr3 , vendor.city as vendor_city, vendor.state as vendor_state," +
+	" vendor.country as vendor_country " +
+	" FROM invoice " +
+	" LEFT JOIN salesrep ON salesrep.id_salesrep = invoice.id_salesrep " +
+	" LEFT JOIN customer ON customer.ListID = customer.ListID " +
+	" LEFT JOIN vendor ON vendor.ListID = customer.vendor_ListID " +
 	" LEFT JOIN term ON term.id_term = invoice.id_term " +
 	" LEFT JOIN customer_msg as cm ON cm.ListID = invoice.customerMsg_ListID " +
 	" WHERE invoice.id_invoice = ?", [filterDataInvoice],invoiceLocalReceiveFunction, invoiceErrFunc);
@@ -147,18 +155,14 @@ function invoiceLocalReceiveFunction(tx,results){
 	console.log("invoiceLocalReceiveFunction results.rows=" + results.rows);
 	console.log("invoiceLocalReceiveFunction results.rows.length=" + results.rows.length);
 	if (results.rows.length>0){
-	console.log("localReceiveFunction1 " + JSON.stringify(results.rows.item(0)));
 		invoiceVO=results.rows.item(0);
 			if (includeInvoiceDetails){
-				console.log("se buscaran los detalles ");
 					tx.executeSql("SELECT LineID, id_invoice, Inventory_ListID, invoice_item.Desc, " +
 					" Quantity, Rate, Amount, SalesTax_ListID, salesTax.Name as salesTax_Name"+
 					" FROM invoice_item " +
 					" LEFT JOIN salesTax ON salesTax.ListID = invoice_item.SalesTax_ListID " +
 					" Where id_invoice = ?", [filterDataInvoice],invoiceItemsLocalReceiveFunction, invoiceLocalErrFunc);
-				console.log("se ejecuta transacción");
 			}else{
-				console.log("se va por else");
 				invoiceReceiveFunction(invoiceVO);
 			}
 	}
@@ -166,8 +170,7 @@ function invoiceLocalReceiveFunction(tx,results){
 }
 
 function invoiceLocalErrFunc(tx, err){
-	console.log("error: " + err);
-	console.log("json error: " + JSON.stringify(err));
+	console.log("invoiceLocalErrFunc error: " + JSON.stringify(err));
 	invoiceErrFunc(err);
 }
 

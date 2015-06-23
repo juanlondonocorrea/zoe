@@ -242,7 +242,7 @@
 						routeDay = customers[i].DataExtRet[j].DataExtValue;
 					}
 					if ("PAY TO" == customers[i].DataExtRet[j].DataExtName.toUpperCase){
-						vendorName = customers[i].DataExtRet[j].DataExtValue;
+						vendorName = customers[i].DataExtRet[j].DataExtValue.toUpperCase();
 						if (vendorNames.indexOf(vendorName)==-1){
 							vendorNames[vendorNames.length]=vendorName;
 						}
@@ -251,7 +251,7 @@
 			}else if (customers[i].DataExtRet && customers[i].DataExtRet.DataExtName.toUpperCase()=="ROUTEDAY"){
 						routeDay = customers[i].DataExtRet.DataExtValue;
 			}else if (customers[i].DataExtRet && customers[i].DataExtRet.DataExtName.toUpperCase()=="PAY TO"){
-						vendorName = customers[i].DataExtRet.DataExtValue;
+						vendorName = customers[i].DataExtRet.DataExtValue.toUpperCase();
 						if (vendorNames.indexOf(vendorName)==-1){
 							vendorNames[vendorNames.length]=vendorName;
 						}
@@ -745,7 +745,7 @@
 		var cache="vendor";
 		var xpathExp = "//VendorRet[";
 		for (var i in vendorNames){
-			xpathExp += 'Name="'  + vendorNames[i] + '"';
+			xpathExp += 'translate(Name, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="'  + vendorNames[i].toLowerCase() + '"';
 			if (i<vendorNames.length-1)
 			 xpathExp+=' or ';
 		}
@@ -757,27 +757,37 @@
 
 	function receiveVendors(message){
 		var vendors = message.VendorQueryRs.VendorRet;
+		console.log("receiveVendors: " +  JSON.stringify(vendors));
 		var i;
 		var vendorsVO = [];
-		for (i=0;i<vendors.length;i++){
-			logZoe("vendors[i]=" + JSON.stringify(vendors[i]));
-			var vendorVO = {
-				ListID:vendors[i].ListID,
-				name : vendors[i].Name,
-				addr1 : vendors[i].VendorAddress.Addr1,
-				addr2 : vendors[i].VendorAddress.Addr2,
-				addr3 : vendors[i].VendorAddress.Addr3,
-				city : vendors[i].VendorAddress.City,
-				state : vendors[i].VendorAddress.State,
-				country : vendors[i].VendorAddress.Country
+		if (vendors.length){
+			for (i=0;i<vendors.length;i++){
+				var vendorVO = assignVendorToVO(vendors[i]);
+				vendorsVO[i] = vendorVO;
 			}
-			vendorsVO[i] = vendorVO;
-			customerDAO.updateVendor(vendorVO.name, vendorVO.ListID);
+		}else if (vendors){
+				var vendorVO = assignVendorToVO(vendors);
+				vendorsVO[0] = vendorVO;
 		}
 			
+		customerDAO.updateVendor(vendorsVO);
 		vendorDAO.deleteAll(errVendorInsert);
 		vendorDAO.store(vendorsVO, errVendorInsert, successVendorInsert);
 	}
+	
+	function assignVendorToVO(vendor){
+			var vendorVO = {
+				ListID:vendor.ListID,
+				name : vendor.Name,
+				addr1 : vendor.VendorAddress.Addr1,
+				addr2 : vendor.VendorAddress.Addr2,
+				addr3 : vendor.VendorAddress.Addr3,
+				city : vendor.VendorAddress.City,
+				state : vendor.VendorAddress.State,
+				country : vendor.VendorAddress.Country
+			}
+			return vendorVO;
+}
 
 
 	function successVendorInsert(){
