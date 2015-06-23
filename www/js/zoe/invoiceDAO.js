@@ -340,3 +340,4 @@ function doMarkToSyncInvoice(tx){
 function doMarkSynchorinizedInvoice(tx){
 	tx.executeSql("UPDATE invoice SET needSync=0, zoeSyncDate=datetime('now', 'localtime') where id_invoice = ?",[filterDataInvoice]);
 }
+
