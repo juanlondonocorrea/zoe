@@ -43,7 +43,7 @@ function listVendors(aReceiveFunction,aErrFunc){
 
 function storeVendor(records,aErrFunc,successCB){
 	db = openDatabaseZoe();
-	logZoe("storeVendor db=" + db);
+	logZoe("storeVendor records=" + JSON.stringify(records));
 	recordVendor = records;
 	vendorErrFunc = aErrFunc;
 	db.transaction(doStoreVendor, errorCB, successCB);

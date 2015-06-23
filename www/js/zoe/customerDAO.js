@@ -172,5 +172,6 @@ function doDeleteAllCustomer(tx){
 }
 
 function doStoreCustomerVendor(tx){
+	console.log("update customer vendor " + recordCustomer + ", " + filterDataCustomer);
 	tx.executeSql("UPDATE customer SET vendor_ListID=? where vendor_ListID = ?",[recordCustomer, filterDataCustomer]);
 }

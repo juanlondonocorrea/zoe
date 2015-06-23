@@ -243,14 +243,18 @@
 					}
 					if ("PAY TO" == customers[i].DataExtRet[j].DataExtName.toUpperCase){
 						vendorName = customers[i].DataExtRet[j].DataExtValue;
-						vendorNames[vendorNames.length]=vendorName;
+						if (vendorNames.indexOf(vendorName)==-1){
+							vendorNames[vendorNames.length]=vendorName;
+						}
 					}
 				}
 			}else if (customers[i].DataExtRet && customers[i].DataExtRet.DataExtName.toUpperCase()=="ROUTEDAY"){
 						routeDay = customers[i].DataExtRet.DataExtValue;
 			}else if (customers[i].DataExtRet && customers[i].DataExtRet.DataExtName.toUpperCase()=="PAY TO"){
 						vendorName = customers[i].DataExtRet.DataExtValue;
-						vendorNames[vendorNames.length]=vendorName;
+						if (vendorNames.indexOf(vendorName)==-1){
+							vendorNames[vendorNames.length]=vendorName;
+						}
 			}
 			routeDay = routeDay.toUpperCase();
 			logZoe("routeday=" + routeDay);
@@ -646,6 +650,10 @@
 
 	function receivePricelevelMessage(message){
 		var pricelevels = message.PriceLevelQueryRs.PriceLevelRet;
+		if (!pricelevels){
+			console.log("ERROR: NO pricelevels!");
+			return;
+		}
 		var i;
 		var pricelevelsVO = [];
 		for (i=0;i<pricelevels.length;i++){
@@ -731,7 +739,7 @@
 //SYNC Vendors
 
 	function syncDownVendors(form){
-		console.log("entre a syncDownVendors");
+		console.log("entre a syncDownVendors:" + JSON.stringify(vendorNames));
 		var mensaje = 	
 		'<VendorQueryRq  requestID="vendor1"></VendorQueryRq>';
 		var cache="vendor";
@@ -743,7 +751,7 @@
 		}
 		xpathExp+=']';
 		
-		consumeWS(mensaje, "JSON", receiveCustomerMsgs, cache,xpathExp);
+		consumeWS(mensaje, "JSON", receiveVendors, cache,xpathExp);
 		return false;
 	}
 
