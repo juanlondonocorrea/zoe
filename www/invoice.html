@@ -29,14 +29,77 @@
 			function errReceive(err){
 				alert("Error " + JSON.stringify(err));
 			}
-			
+			var id_invoice = null;
 			function initThisPage(event){
+				console.log("initThisPage invoice event.currentTarget.URL=" + event.currentTarget.URL);
+				if (event.currentTarget.URL && event.currentTarget.URL.indexOf("?")>-1){
+					var parameters = event.currentTarget.URL.split("?")[1].split("&");
+					console.log("parameters=" + parameters);
+					for (var i in parameters){
+						var parameterDupla = parameters[i].split("=");
+						if (parameterDupla[0]=="id_invoice"){
+							id_invoice = parameterDupla[1];
+						}
+					}
+					
+				}
 				customerDAO.list(receiveCustomers,errReceive);
 				termDAO.list(receiveTerms,errReceive);
 				taxDAO.list(receiveTaxes,errReceive);
 				customerMsgDAO.list(receiveCustomerMsgs,errReceive);
 				salesRepDAO.getByName(window.localStorage.getItem("salesRepName"),receiveSalesrep);
+				if (id_invoice){
+					invoiceDAO.getById(id_invoice, true, receiveInvoice, errReceiveInvoice);
+				}
+			}
+			
+			var currentInvoice;
+			function receiveInvoice(invoice){
+				currentInvoice = invoice;
+				console.log("invoice.html receiveInvoice=" + JSON.stringify(invoice));
+				setTimeout(waitAllLoad, 300);
+			}
+			
+			function renderInvoice(){
+				console.log("renderInvoice");
+				$("#selCustomer").val(currentInvoice.ListID).selectmenu('refresh');
+				selCustomerChange();
+				$("#selTerm").val(currentInvoice.id_term).selectmenu('refresh');
+				$("#Date").val(currentInvoice.txnDate);
+				$("#Due").val(currentInvoice.dueDate);
+				$("#refNumber").val(currentInvoice.refNumber);
+				$("#PONumber").val(currentInvoice.po_number);
+				$("#SalesRep").val(currentInvoice.salesrep_Name);
+				$("#RatePrice").val(currentInvoice.salesTaxTotal);
+				$("#Amount").val(currentInvoice.subtotal);
+				$("#memo").val(currentInvoice.memo);
+				$("#selCustomerMsg").val(currentInvoice.customerMsg_ListID).selectmenu('refresh');
 				
+				
+				
+				//fill currentItems
+				currentItems = new Array();
+				for (var i in currentInvoice.items){
+					var aItem = currentInvoice.items[i];
+					aItem.position = i+1;
+					currentItems[i] = aItem;
+				}
+				renderItems();
+			}
+			
+			var allLoaded = false;
+			function waitAllLoad(){
+				console.log("waitAllLoad");
+				if (salesRepVO && listCustomers && listTerms && listTaxes && listCustomerMsgs && currentInvoice){
+					allLoaded = true;
+					renderInvoice();
+				}else{
+					setTimeout(waitAllLoad, 300);
+				}
+			}
+			
+			function errReceiveInvoice(tx, err){
+				alert("Could no get the invoice error: " + JSON.stringify(err));
 			}
 			
 			var salesrepVO;
@@ -118,8 +181,10 @@
 				customerSelectedIndex = $( "#selCustomer" )[0].selectedIndex-1;
 				console.log("selCustomerChange custseleccionado=" + JSON.stringify(listCustomers[customerSelectedIndex]));
 				inventoryDAO.listByCustomer($( "#selCustomer" ).val(),receiveItems,errReceive);
-				$("#selTerm").val(listCustomers[customerSelectedIndex].id_term).selectmenu("refresh");
-				selTermChange();
+				if (!currentInvoice){
+					$("#selTerm").val(listCustomers[customerSelectedIndex].id_term).selectmenu("refresh");
+					selTermChange();
+				}
 				console.log("listCustomers[customerSelectedIndex].id_term=" + listCustomers[customerSelectedIndex].id_term);
 				console.log("$('#selTerm').val()" + $('#selTerm').val());
 				console.log("$('#selTerm')[0].selectedIndex" + $('#selTerm')[0].selectedIndex);
@@ -535,7 +600,7 @@ table, th, td {
                              
             <fieldset class="ui-grid-a">
                 <div class="ui-block-a"><button type="button" id="submit" data-theme="c"onClick="storeInvoice(); return false;">Done</button></div>
-                <div class="ui-block-b"><button type="button" id="cancel" data-theme="b">Cancel</button></div>	   
+                <div class="ui-block-b"><button type="button" id="cancel" data-rel="back" data-theme="b">Cancel</button></div>	   
             </fieldset>              
               
 

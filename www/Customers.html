@@ -253,14 +253,20 @@
 				
 				for(var i=0; i< arrayListInvoicesByCust.length; i++) {
 						var dueDays = restaFechas(arrayListInvoicesByCust[i].dueDate,hoy); // Date in format yyyy-mm-dd
+						if (dueDays<0){
+							dueDays = 0;
+						}
 						var monsthsAgo = dueDays/30;
 						monsthsAgo = monsthsAgo.toFixed(1); // Calc months with 1 decimal number
 						htmlString2 += '<li data-filtertext="' + arrayListInvoicesByCust[i].id_invoice + '">'+
 						'<div class="ui-grid-b"><div class="ui-block-a" style="width:80%">Invoice #' + arrayListInvoicesByCust[i].refNumber +
-						'<div>Amount: <span id="overdueBal">'+arrayListInvoicesByCust[i].appliedAmount+'</span><br/>Balance Remaining:<span> '+arrayListInvoicesByCust[i].balanceRemaining+'</span><br/><span id="OberdueBy">Overdue by '+dueDays+' days</span><br/><span id="AddedMonthsAgo">Added '+monsthsAgo+' months ago</span></div></div>'+
-						'<div class="ui-block-b" style="width:20%">';
+						'<div>Amount: <span id="overdueBal">'+arrayListInvoicesByCust[i].appliedAmount+'</span><br/>Balance Remaining:<span> '+arrayListInvoicesByCust[i].balanceRemaining+'</span><br/>';
+						if (dueDays>0){
+							htmlString2 +='<span id="OberdueBy">Overdue by '+dueDays+' days</span><br/><span id="AddedMonthsAgo">Added '+monsthsAgo+' months ago</span>';
+						}
+						htmlString2 +='</div></div><div class="ui-block-b" style="width:20%">';
 						if (arrayListInvoicesByCust[i].origin == 'local'){
-							htmlString2 += '<a href="config.html" class="ui-btn ui-shadow ui-corner-all ui-icon-delete ui-btn-icon-notext ui-icon-edit"  data-iconpos="notext"  data-ajax="false"></a>';
+							htmlString2 += '<a href="invoice.html?id_invoice=' + arrayListInvoicesByCust[i].id_invoice + '" class="ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-icon-edit"  data-iconpos="notext"  data-ajax="false"></a>';
 						}
 						htmlString2 +='<a href="InvoicePreview.html?id_invoice="' + arrayListInvoicesByCust[i].id_invoice +
 						'" class="ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-icon-print" data-ajax="false"></a>' + 

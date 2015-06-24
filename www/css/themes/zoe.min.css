@@ -227,4 +227,16 @@ html .ui-alt-icon .ui-radio-off:after {
     /* Make your icon fit */
     background-size: 18px 18px;
 }
-						
+
+.ui-icon-print:after {
+    background-image: url("images/print.png") !important;
+    /* Make your icon fit */
+    background-size: 18px 18px;
+}
+
+.ui-icon-print:after {
+    background-image: url("images/print.png") !important;
+    /* Make your icon fit */
+    background-size: 18px 18px;
+}
+												
