@@ -920,4 +920,16 @@ button[disabled],
     /* Make your icon fit */
     background-size: 18px 18px;
 }
+
+.ui-icon-print:after {
+    background-image: url("images/print.png") !important;
+    /* Make your icon fit */
+    background-size: 18px 18px;
+}
+
+.ui-icon-print:after {
+    background-image: url("images/print.png") !important;
+    /* Make your icon fit */
+    background-size: 18px 18px;
+}
 						

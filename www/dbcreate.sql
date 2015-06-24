@@ -1,6 +1,6 @@
 ﻿/*
 Created: 29/04/2015
-Modified: 20/06/2015
+Modified: 23/06/2015
 Model: RE SQLite 3.7
 Database: SQLite 3.7
 */
@@ -180,6 +180,7 @@ CREATE TABLE invoice
   id_invoice TEXT NOT NULL,
   ListID TEXT NOT NULL,
   po_number TEXT,
+  txDate INTEGER,
   dueDate INTEGER,
   appliedAmount NUMERIC,
   balanceRemaining NUMERIC,

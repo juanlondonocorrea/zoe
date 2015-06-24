@@ -248,17 +248,26 @@
 			// List Invoices by Customer 
 			function receiveInvoices(arrayListInvoicesByCust){
 				// Build customers' invoices by Customer, list with <ul> <li>
-				var htmlString2 = '<ol id="listInvoiceByCust" data-role="listview" data-filter="true" data-filter-placeholder="Search invoice..." data-inset="true">';
+				var htmlString2 = '<ul id="listInvoiceByCust" data-role="listview" data-filter="true" data-filter-placeholder="Search invoice..." data-inset="true">';
 				var hoy=Date.now(); // Current date in milliseconds
 				
 				for(var i=0; i< arrayListInvoicesByCust.length; i++) {
 						var dueDays = restaFechas(arrayListInvoicesByCust[i].dueDate,hoy); // Date in format yyyy-mm-dd
 						var monsthsAgo = dueDays/30;
 						monsthsAgo = monsthsAgo.toFixed(1); // Calc months with 1 decimal number
-						htmlString2 += '<li data-filtertext="' + arrayListInvoicesByCust[i].id_invoice + '"><label id="invoice"><a class="linkDetail" href="#CustomersDetails?index=' + i + '" id="link2_' + i + '">Invoice #' + arrayListInvoicesByCust[i].refNumber + '</a></label>Amount: <span id="overdueBal">'+arrayListInvoicesByCust[i].appliedAmount+'</span><br/>Balance Remaining:<span> '+arrayListInvoicesByCust[i].balanceRemaining+'</span><br/><span id="OberdueBy">Overdue by '+dueDays+' days</span><br/><span id="AddedMonthsAgo">Added '+monsthsAgo+' months ago</span><a class="linkDetail" href="#CustomersDetails?index=' + i + '" id="link2_' + i + '"></a></li>';
+						htmlString2 += '<li data-filtertext="' + arrayListInvoicesByCust[i].id_invoice + '">'+
+						'<div class="ui-grid-b"><div class="ui-block-a" style="width:80%">Invoice #' + arrayListInvoicesByCust[i].refNumber +
+						'<div>Amount: <span id="overdueBal">'+arrayListInvoicesByCust[i].appliedAmount+'</span><br/>Balance Remaining:<span> '+arrayListInvoicesByCust[i].balanceRemaining+'</span><br/><span id="OberdueBy">Overdue by '+dueDays+' days</span><br/><span id="AddedMonthsAgo">Added '+monsthsAgo+' months ago</span></div></div>'+
+						'<div class="ui-block-b" style="width:20%">';
+						if (arrayListInvoicesByCust[i].origin == 'local'){
+							htmlString2 += '<a href="config.html" class="ui-btn ui-shadow ui-corner-all ui-icon-delete ui-btn-icon-notext ui-icon-edit"  data-iconpos="notext"  data-ajax="false"></a>';
+						}
+						htmlString2 +='<a href="InvoicePreview.html?id_invoice="' + arrayListInvoicesByCust[i].id_invoice +
+						'" class="ui-btn ui-shadow ui-corner-all ui-btn-icon-notext ui-icon-print" data-ajax="false"></a>' + 
+						'</div></li>';
 						logZoe("htmlString2 =" + JSON.stringify(arrayListInvoicesByCust[i]));
 					}
-					htmlString2 += '</ol>';
+					htmlString2 += '</ul>';
 					$('#InvoiceList').html(htmlString2);
 					//$(".linkDetail").click(goDetailInvoice);
 			}
