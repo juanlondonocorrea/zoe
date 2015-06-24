@@ -180,7 +180,7 @@ CREATE TABLE invoice
   id_invoice TEXT NOT NULL,
   ListID TEXT NOT NULL,
   po_number TEXT,
-  txDate INTEGER,
+  txnDate INTEGER,
   dueDate INTEGER,
   appliedAmount NUMERIC,
   balanceRemaining NUMERIC,
