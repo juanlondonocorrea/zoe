@@ -234,14 +234,15 @@
 			var routeDay = "";
 			var vendorName = null;
 
-			logZoe("customers[i].DataExtRet:" + JSON.stringify(customers[i].DataExtRet));
+			console.log("customers[i].DataExtRet:" + JSON.stringify(customers[i].DataExtRet));
 			if (customers[i].DataExtRet && customers[i].DataExtRet.length>0){
 				for (var j = 0; j< customers[i].DataExtRet.length; j++){
-					logZoe("customers[i].DataExtRet[j].DataExtName=" + customers[i].DataExtRet[j].DataExtName);
-					if ("ROUTEDAY" == customers[i].DataExtRet[j].DataExtName.toUpperCase){
+					console.log("customers[i].DataExtRet[j].DataExtName=" + customers[i].DataExtRet[j].DataExtName);
+					if ("ROUTEDAY" == customers[i].DataExtRet[j].DataExtName.toUpperCase()){
 						routeDay = customers[i].DataExtRet[j].DataExtValue;
+						console.log("routeday encontrado asi queda routeDay=" + routeDay);
 					}
-					if ("PAY TO" == customers[i].DataExtRet[j].DataExtName.toUpperCase){
+					if ("PAY TO" == customers[i].DataExtRet[j].DataExtName.toUpperCase()){
 						vendorName = customers[i].DataExtRet[j].DataExtValue.toUpperCase();
 						if (vendorNames.indexOf(vendorName)==-1){
 							vendorNames[vendorNames.length]=vendorName;
@@ -250,6 +251,7 @@
 				}
 			}else if (customers[i].DataExtRet && customers[i].DataExtRet.DataExtName.toUpperCase()=="ROUTEDAY"){
 						routeDay = customers[i].DataExtRet.DataExtValue;
+						console.log("routeday encontrado asi queda routeDay=" + routeDay);
 			}else if (customers[i].DataExtRet && customers[i].DataExtRet.DataExtName.toUpperCase()=="PAY TO"){
 						vendorName = customers[i].DataExtRet.DataExtValue.toUpperCase();
 						if (vendorNames.indexOf(vendorName)==-1){
@@ -282,13 +284,13 @@
 			email:customers[i].Email,
 			Fax:customers[i].Fax,
 			id_salesrep:customers[i].SalesRepRef?customers[i].SalesRepRef.ListID:null,
-			routeDay1:routeDay.indexOf("SUN")>-1?1:0,
-			routeDay2:routeDay.indexOf("MON")>-1?1:0,
-			routeDay3:routeDay.indexOf("TUE")>-1?1:0,
-			routeDay4:routeDay.indexOf("WED")>-1?1:0,
-			routeDay5:routeDay.indexOf("THU")>-1?1:0,
-			routeDay6:routeDay.indexOf("FRI")>-1?1:0,
-			routeDay7:routeDay.indexOf("SAT")>-1?1:0,
+			routeDay1:routeDay.indexOf("SUN")>-1||routeDay.indexOf("ALL")>-1?1:0,
+			routeDay2:routeDay.indexOf("MON")>-1||routeDay.indexOf("ALL")>-1?1:0,
+			routeDay3:routeDay.indexOf("TUE")>-1||routeDay.indexOf("ALL")>-1?1:0,
+			routeDay4:routeDay.indexOf("WED")>-1||routeDay.indexOf("ALL")>-1?1:0,
+			routeDay5:routeDay.indexOf("THU")>-1||routeDay.indexOf("ALL")>-1?1:0,
+			routeDay6:routeDay.indexOf("FRI")>-1||routeDay.indexOf("ALL")>-1?1:0,
+			routeDay7:routeDay.indexOf("SAT")>-1||routeDay.indexOf("ALL")>-1?1:0,
 			name:customers[i].Name,
 			companyName:customers[i].CompanyName,
 			id_term:customers[i].TermsRef?customers[i].TermsRef.ListID:null,

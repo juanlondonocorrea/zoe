@@ -195,7 +195,7 @@
 				listCustomers = arrayCustomers; // Copy local array to global array
 				console.log("========= INICIO LISTA =========");
 				// Build customers list with <ol> <li>
-				var htmlString1 = '<ol id="custList" data-role="listview" data-filter="true" data-filter-placeholder="Search customers..." data-inset="true">';
+				var htmlString1 = "";
 				
 				for(var i=0; i< arrayCustomers.length; i++) {
 				/*	if (arrayCustomers[i].openBalance < 0) {
@@ -204,14 +204,13 @@
 					else {
 						$("#openB").css("color", "black");
 					} */
+					var li =  '<li data-filtertext="' + arrayCustomers[i].FullName + '"><a class="linkDetail" href="#CustomersDetails?index=' + i + '" id="link_' + i + '" ><h3>'+arrayCustomers[i].FullName+'</h3><p>' + ((type=='route')?'Total sales':'Balance') + '</p><span id="openB" class="ui-li-count">'+((type=='route')?arrayCustomers[i].salesofday:arrayCustomers[i].openBalance)+'</span></a><a class="linkDetail" href="#CustomersDetails?index=' + i + '" id="link_' + i + '">Predet.</a></li>';
 					
-					htmlString1 += '<li data-filtertext="' + arrayCustomers[i].FullName + '"><a class="linkDetail" href="#CustomersDetails?index=' + i + '" id="link_' + i + '" ><h3>'+arrayCustomers[i].FullName+'</h3><p>' + ((type=='route')?'Total sales':'Balance') + '</p><span id="openB" class="ui-li-count">'+((type=='route')?arrayCustomers[i].salesofday:arrayCustomers[i].openBalance)+'</span></a><a class="linkDetail" href="#CustomersDetails?index=' + i + '" id="link_' + i + '">Predet.</a></li>';
-					
+					htmlString1 += li;
+					console.log("li=" + li);					
 					}
-					htmlString1 += '</ol>';
-					logZoe("htmlString1="+htmlString1);
 					console.log("========= FIN LISTA =========");
-					$('#CustomersList').html(htmlString1);
+					$('#custList').html(htmlString1).listview('refresh');
 					$(".linkDetail").click(goDetail); 
 			}
 			
@@ -275,7 +274,7 @@
 					}
 					htmlString2 += '</ul>';
 					$('#InvoiceList').html(htmlString2);
-					//$(".linkDetail").click(goDetailInvoice);
+					$(".linkDetail").click(goDetailInvoice);
 			}
 			
 			function goDetail(event){
@@ -514,7 +513,9 @@
         <!-- CUSTOMERS LIST (ALPHABETIC BY NAME AND OVERDUE BALANCE IN RED) -->
 		<div data-role="page" id="Customers" data-theme="a" data-title="Customers">
 			<div data-role="content" id="CustomersList">
-				<!-- Injection-->
+            <ul id="custList" data-role="listview" data-filter="true" data-filter-placeholder="Search customers..." data-inset="true">
+            
+                </ul>
 			</div>
 			<!-- divs de header, menu y footer-->
 			<div data-role="header" data-position="fixed" data-id="theheader" class="app-header"></div>
@@ -908,9 +909,9 @@
 			</div>
 
 			<!-- divs de header, menu y footer-->
-			<div data-role="header" data-position="fixed" data-id="theheader" class="app-header"></div>
-			<div data-role="panel" data-display="overlay" data-position="left" id="menu" class="app-menu"></div>
-			<div data-role="footer" data-position="fixed" data-id="thefooter" class="app-footer"></div>
+			<div data-role="header" data-position="fixed" data-id="theheader2" class="app-header"></div>
+			<div data-role="panel" data-display="overlay" data-position="left" id="menu2" class="app-menu"></div>
+			<div data-role="footer" data-position="fixed" id="thefooter2" class="app-footer"></div>
 			<!-- fin divs -->    
 		</div>
 		<!-- END CUSTOMERS DETAILS--> 
